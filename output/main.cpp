@@ -1,66 +1,17 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <node.hpp>
 using namespace std;
 
 
-struct Node {
-	std::string val;
-	std::vector<Node> list;
+namespace build {
 
-	int count() const {
-		return list.size();
-	}
-	int count(const string& name) const {
-		int c = 0;
-		for (const auto& n : list)
-			if (n.val == name) c++;
-		return c;
-	}
-	// int get_index(const string& name, int index) const {
-	// 	int c = 0;
-	// 	for (int i = 0; i < list.size(); i++)
-	// 		if (name == "*" || list[i].val == name) {
-	// 			if (c == index) return i;
-	// 			c++;
-	// 		}
-	// 	throw string("not found: ["+name+"] ["+to_string(index)+"] at ["+val+"]");
-	// }
-	// Node& get(int index) { return list[get_index("*", index)]; }
-	// const Node& get(int index) const { return list[get_index("*", index)]; }
-	// Node& get(const string& name, int index=0) { return list[get_index(name, index)]; }
-	// const Node& get(const string& name, int index=0) const { return list[get_index(name, index)]; }
-	Node& get(int index) {
-		if (index < 0 || index >= list.size())
-			throw string("not found: ["+to_string(index)+"] at ["+val+"]");
-		return list[index];
-	}
-	Node& get(const string& name, int index=0) {
-		int c = 0;
-		for (auto& n : list)
-			if (n.val == name) {
-				if (c == index) return n;
-				c++;
-			}
-		throw string("not found: ["+name+"] ["+to_string(index)+"] at ["+val+"]");
-	}
-};
-
-
-void show_node(Node& n, int indent=0) {
-	if (n.val == "()") {
-		cout << (indent > 0 ? "\n" : "") << string(indent, '\t') << "(";
-		for (auto& nn : n.list)
-			show_node(nn, indent+1);
-		cout << ")";
-	}
-	else {
-		cout << n.val << " ";
-	}
+Node b_if(const Node& ast) {
+	return {};
 }
 
-
-Node build_block(Node& ast) {
+Node b_block(const Node& ast) {
 	Node block = {"()", { 
 		{"block"}
 	}};
@@ -70,9 +21,17 @@ Node build_block(Node& ast) {
 	return block;
 }
 
-Node build_function(Node& ast) {
+Node b_dim_block(const Node& ast) {
+	Node dblock = {"()"};
+	Node assign = {"()"};
+	for (auto& ln : ast.list)
+		; // ... TODO
+	return dblock;
+}
+
+Node b_function(const Node& ast) {
 	auto name = ast.get("name").get(0).val;
-	auto block = build_block(ast.get("block"));
+	auto block = b_block(ast.get("block"));
 	// function template
 	Node func = {"()", { 
 		{"func"}, {"$"+name}, 
@@ -107,7 +66,7 @@ Node build_function(Node& ast) {
 	return func;
 }
 
-Node build_module(Node& ast) {
+Node b_module(const Node& ast) {
 	Node module = {"()", {
 		{"module"}, {"$dbasic_program"}
 	}};
@@ -117,6 +76,8 @@ Node build_module(Node& ast) {
 	// (function $f)
 	return module;
 }
+
+} // end build
 
 
 int main() {
@@ -155,8 +116,8 @@ int main() {
 	}};
 
 	try {
-		Node prog = build_function(func);
-		show_node(prog);
+		Node prog = build::build_function(func);
+		node_show(prog);
 	}
 	catch (const string& err) {
 		cerr << "error: " << err << endl;
