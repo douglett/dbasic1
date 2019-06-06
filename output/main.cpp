@@ -25,6 +25,14 @@ Node b_if(const Node& ast) {
 	}};
 }
 
+Node b_set(const Node& ast) {
+	return {"()", {
+		{"local.set"},
+		{ "$"+ast.get("var").get(0).val },
+		b_expr( ast.get("expr") )
+	}};
+}
+
 Node b_block(const Node& ast) {
 	Node block = {"()", { 
 		{"block"}
@@ -32,6 +40,7 @@ Node b_block(const Node& ast) {
 	// parse each block command
 	for (auto& ln : ast.list)
 		if (ln.val == "if") block.list.push_back( b_if(ln) );
+		else if (ln.val == "set") block.list.push_back( b_set(ln) );
 		else throw string("unexpected in block: "+ln.val);
 	return block;
 }
@@ -114,15 +123,15 @@ int main() {
 					}}
 				}},
 				{"block", {
-					// {"set", {
-					// 	{"var", { {"a"} }},
-					// 	{"expr", {
-					// 		{"+", {
-					// 			{"var", { {"a"} }},
-					// 			{"number", { {"1"} }}
-					// 		}}
-					// 	}}
-					// }}
+					{"set", {
+						{"var", { {"a"} }},
+						{"expr", {
+							{"+", {
+								{"var", { {"a"} }},
+								{"number", { {"1"} }}
+							}}
+						}}
+					}}
 				}}
 			}}
 		}}
@@ -131,6 +140,7 @@ int main() {
 	try {
 		Node prog = build::b_function(func);
 		node_show(prog);
+		cout << endl;
 	}
 	catch (const string& err) {
 		cerr << "error: " << err << endl;
