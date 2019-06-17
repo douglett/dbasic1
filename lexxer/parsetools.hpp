@@ -1,5 +1,7 @@
+#pragma once
 #include <string>
 #include <vector>
+#include <iostream>
 
 struct ParseTools {
 	typedef std::vector<std::string> vecstr;
@@ -23,6 +25,9 @@ struct ParseTools {
 	}
 	static int isspecial(char c) {
 		return !isletter(c) && !isdigit(c) && !isspace(c);
+	}
+	static int iseol(char c) {
+		return c == '\n' || c == '\r' || c == '\f';
 	}
 
 	static vecstr split(const std::string& str) {
