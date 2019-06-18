@@ -2,6 +2,7 @@
 #include "parsetools.hpp"
 
 struct Rule : ParseTools {
+	std::string name;
 	Node rule;
 	vecstr tokens;
 	unsigned int pos = 0;
@@ -15,7 +16,8 @@ struct Rule : ParseTools {
 
 	int mkrule(const std::string& name, const std::string& rulestr) {
 		try {
-			rule = { name };
+			this->name = name;
+			rule = { "()" };
 			tokens = split(rulestr);
 			pos = 0;
 			while (pos < tokens.size())
@@ -29,9 +31,11 @@ struct Rule : ParseTools {
 	}
 	Node mkor() {
 		auto n = mkmodifier();
+		// printf("here 1 %s\n", n.val.c_str());
 		if (pos < tokens.size() && tokens[pos] == "|") {
+			// printf("here\n");
 			pos++;
-			auto n2 = mkatom();
+			auto n2 = mkor();
 			n = { "|", { n, n2 } };
 		}
 		return n;
@@ -59,7 +63,8 @@ struct Rule : ParseTools {
 		pos++;
 		while (pos < tokens.size())
 			if   (tokens[pos] == ")") return ++pos, n;
-			else n.list.push_back({ tokens[pos++] });
+			// else n.list.push_back({ tokens[pos++] });
+			else n.list.push_back( mkor() );
 		throw std::string("expected end bracket");
 	}
 };

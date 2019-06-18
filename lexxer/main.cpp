@@ -6,5 +6,6 @@ int main() {
 
 	Lexxer l;
 	printf("running...\n");
-	l.run(l.rules[0], "test");
+	int i = l.run("IDENTIFIER", "test");
+	printf("res: %d\n", i);
 }
