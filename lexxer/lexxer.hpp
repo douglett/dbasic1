@@ -4,8 +4,9 @@
 
 struct Lexxer : ParseTools {
 	std::vector<Rule> rules = {
-		Rule::make("IDENTIFIER", "L(L|D)*"),
-		Rule::make("NUMBER", "D+")
+		Rule::make("WS", "S*"),
+		Rule::make("NUMBER", "D+"),
+		Rule::make("IDENTIFIER", "L(L|D)*")
 	};
 
 	int run(const std::string& rulename, const std::string& str, const int pos=0) {
@@ -22,6 +23,7 @@ struct Lexxer : ParseTools {
 		int len = 0, l = 0;
 		printf("running subrule: %s  [%s] [%d]\n", rule.val.c_str(), str.c_str(), pos);
 		if      (pos >= (int)str.length()) return -1;
+		else if (rule.val == "S") return isspace(str[pos])  ? 1 : -1;
 		else if (rule.val == "L") return isletter(str[pos]) ? 1 : -1;
 		else if (rule.val == "D") return isdigit(str[pos])  ? 1 : -1;
 		else if (rule.val == "|") {
