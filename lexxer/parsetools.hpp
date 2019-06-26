@@ -29,6 +29,9 @@ struct ParseTools {
 	static int iseol(char c) {
 		return c == '\n' || c == '\r' || c == '\f';
 	}
+	static int iseof(const std::string& s, int pos) {
+		return pos >= (int)s.length();
+	}
 
 	static vecstr split(const std::string& str) {
 		vecstr vs;

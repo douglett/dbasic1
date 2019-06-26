@@ -47,7 +47,7 @@ struct Rule : ParseTools {
 		return n;
 	}
 	int is_modifier(const std::string& s) {
-		return s == "*" || s == "+" || s == "?";
+		return s == "*" || s == "+" || s == "?" || s == "~";
 	}
 	Node mkatom() {
 		if (pos >= tokens.size())

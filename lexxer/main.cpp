@@ -6,7 +6,15 @@ int main() {
 	printf("hello world\n");
 
 	ASTParser par;
-	par.test();
+//	par.test();
+	try {
+		ParseTools::Node n;
+		int i = par.runrule("test2", "asd bacon cheese on toast", 0, n);
+		printf("result: %d\n", i);
+		ParseTools::shownode(n);
+	} catch(const std::string& e) {
+		fprintf(stderr, "%s\n", e.c_str());
+	}
 
 
 	// Lexxer l;
