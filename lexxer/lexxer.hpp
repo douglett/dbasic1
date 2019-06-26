@@ -12,20 +12,14 @@ struct Lexxer : ParseTools {
 		Rule::make("IDENTIFIER", "L(L|D)*")
 	};
 
-	Rule* findrule(const std::string& rulename) {
+	Rule& findrule(const std::string& rulename) {
 		for (auto& r : rules)
-			if (r.name == rulename) return &r;
-		return NULL;
+			if (r.name == rulename) return r;
+		throw std::string("missing lexxer rule: "+rulename);
 	}
 	int run(const std::string& rulename, const std::string& str, const int pos=0) {
-		Rule* rule = findrule(rulename);
-		if (!rule) {
-			fprintf(stderr, "unknown rule: %s\n", rulename.c_str());
-			return -1;
-		} else {
-			// printf("running rule: %s\n", rulename.c_str());
-			return runsub(rule->rule, str, pos);
-		}
+		Rule& rule = findrule(rulename);
+		return runsub(rule.rule, str, pos);
 	}
 	int runsub(const Node& rule, const std::string& str, const int pos=0) {
 		int len = 0, l = 0;

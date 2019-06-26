@@ -16,7 +16,7 @@ struct ASTParser : ParseTools {
 	Rule& findrule(const std::string& rulename) {
 		for (auto& r : rules)
 			if (r.name == rulename) return r;
-		throw std::string("missing rule: "+rulename);
+		throw std::string("missing AST rule: "+rulename);
 	}
 	
 	void test() {
