@@ -2,6 +2,9 @@
 #include "parsetools.hpp"
 #include "rule.hpp"
 
+/**
+ * Lexxer - takes input string and returns a token string
+ */
 struct Lexxer : ParseTools {
 	std::vector<Rule> rules = {
 		Rule::make("WS", "S*"),
@@ -9,6 +12,11 @@ struct Lexxer : ParseTools {
 		Rule::make("IDENTIFIER", "L(L|D)*")
 	};
 
+	Rule* findrule(const std::string& rulename) {
+		for (auto& r : rules)
+			if (r.name == rulename) return &r;
+		return NULL;
+	}
 	int run(const std::string& rulename, const std::string& str, const int pos=0) {
 		Rule* rule = findrule(rulename);
 		if (!rule) {
@@ -48,10 +56,5 @@ struct Lexxer : ParseTools {
 			return len;
 		}
 		return run(rule.val, str, pos);
-	}
-	Rule* findrule(const std::string& rulename) {
-		for (auto& r : rules)
-			if (r.name == rulename) return &r;
-		return NULL;
 	}
 };
