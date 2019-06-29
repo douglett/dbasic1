@@ -1,14 +1,17 @@
+#pragma once
 #include <string>
 #include <vector>
 #include <fstream>
+#include "../helpers/parsetools.hpp"
 
 struct Token {
 	std::string val;
 	int line;
 };
 
-struct Tokenizer {
+struct Tokenizer : ParseTools {
 	std::vector<std::string> lines;
+	std::vector<Token> tokens;
 	int line = 0;
 
 	int load(const std::string& fname) {
@@ -27,13 +30,18 @@ struct Tokenizer {
 			lno++;
 			std::string s;
 			for (const auto& c : line) {
-				if (c == ' ' || c == '\t') {
-					if (s.length()) list.push_back({ s, lno }), s = "";
+				if (iswhitespace(c) || isspecial(c)) {
+					if (s.length()) tokens.push_back({ s, lno }), s = "";
+					if (isspecial(c)) tokens.push_back({ std::string()+c, lno });
 				}
-				else {
-					s += 
-				}
+				else
+					s += c;
 			}
+			if (s.length()) tokens.push_back({ s, lno });
+			tokens.push_back({ "[EOL]", lno });
 		}
+		if (tokens.size()) tokens.pop_back();
+		tokens.push_back({ "[EOF]", lno });
+		return 0;
 	}
 };

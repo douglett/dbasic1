@@ -23,8 +23,11 @@ struct ParseTools {
 	static int isdigit(char c) {
 		return c >= '0' && c <= '9';
 	}
+	static int iswhitespace(char c) {
+		return c == ' ' || c == '\t';
+	}
 	static int isspecial(char c) {
-		return !isletter(c) && !isdigit(c) && !isspace(c);
+		return !isletter(c) && !isdigit(c) && !iswhitespace(c);
 	}
 	static int iseol(char c) {
 		return c == '\n' || c == '\r' || c == '\f';
