@@ -1,8 +1,10 @@
 #pragma once
 #include "../helpers/parsetools.hpp"
+#include "../helpers/node.hpp"
 #include "tokenizer.hpp"
 
 struct Parser : ParseTools {
+	Node ast;
 	Tokenizer tok;
 	int pos = 0;
 
@@ -11,7 +13,8 @@ struct Parser : ParseTools {
 	int parse() {
 		for (auto t : tok.tokens)
 			printf("  [%s]\n", t.val.c_str());
-		int result = prog();
+		pos = 0;
+		int result = prog(ast);
 		printf("parse result: %d\n", result);
 		return 0;
 	}
@@ -28,10 +31,12 @@ struct Parser : ParseTools {
 		return -1;
 	}
 
-	int prog() {
+	int prog(Node& ast) {
+		ast = {"prog"};
+//		auto& fn = ast.get("functions");
 		while (!eoftok())
 			if      (eoltok() > 0) ;
-			else if (function() > 0) ;
+			else if (function(ast) > 0) ;
 			else    goto err;
 		return 1;
 		err:
@@ -64,41 +69,41 @@ struct Parser : ParseTools {
 		return 0;
 	}
 
-	int function() {
+	int function(Node& funclist) {
 		if (expect("function") <= 0) return 0;
+		Node& func = funclist.push({"function", {
+			{"name"},
+			{"block"}
+		}});
 		if (identifier() <= 0) goto err;
-		if (expect("(") <= 0) goto err;
-		if (expect(")") <= 0) goto err;
-		if (eoltok() <= 0) goto err;
-		if (block() <= 0) goto err;
-		if (expect("end") <= 0) goto err;
-		if (expect("function") <= 0) goto err; // optional
-		if (!eoltok() && !eoftok()) goto err;
+		func.get("name").push({ peek(-1).val });
+		if (!expect("(") || !expect(")") || !eoltok()) goto err;
+		if (block(func.get("block")) <= 0) goto err;
+		if (!expect("end") || !expect("function") || !(eoltok() || eoftok())) goto err;
 		return 1;
 		err:
-		//fprintf(stderr, "function error line %d\n", peek().line);
 		doerr("function");
 		return -1;
 	}
 
-	int block() {
+	int block(Node& blk) {
 		while (peek().val != "end")
-			if   (peek().val == "dim") dim();
+			if   (dim(blk) > 0) ;
 			else goto err;
 		return 1;
 		err:
-		//fprintf(stderr, "block error line %d [%s]\n", peek().line, peek().val.c_str());
 		doerr("block");
 		return -1;
 	}
 
-	int dim() {
-		if (!expect("dim")) goto err;
+	int dim(Node& blk) {
+		if (!expect("dim")) return 0;
+		Node& dimn = blk.push({ "dim" });
 		if (!identifier()) goto err;
+		dimn.push({ "name" }).push({ peek(-1).val });
 		if (!eoltok()) goto err;
 		return 1;
 		err:
-		//fprintf(stderr, "dim error line %d\n", peek().line);
 		doerr("dim");
 		return -1;
 	}

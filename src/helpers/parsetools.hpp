@@ -6,16 +6,16 @@
 struct ParseTools {
 	typedef std::vector<std::string> vecstr;
 
-	struct Node {
-		std::string val;
-		std::vector<Node> list;
-	};
-
-	static void shownode(const Node& n, int ind=0) {
-		printf("%s[%s]\n", std::string(ind*2, ' ').c_str(), n.val.c_str());
-		for (auto& nn : n.list)
-			shownode(nn, ind+1);
-	}
+//	struct Node {
+//		std::string val;
+//		std::vector<Node> list;
+//	};
+//
+//	static void shownode(const Node& n, int ind=0) {
+//		printf("%s[%s]\n", std::string(ind*2, ' ').c_str(), n.val.c_str());
+//		for (auto& nn : n.list)
+//			shownode(nn, ind+1);
+//	}
 
 	static int isletter(char c) {
 		return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';

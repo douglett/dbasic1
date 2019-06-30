@@ -19,7 +19,7 @@ struct Node {
 	}
 	int get_index(const std::string& name, int index) const {
 		int c = 0;
-		for (int i = 0; i < list.size(); i++)
+		for (unsigned int i = 0; i < list.size(); i++)
 			if (name == "*" || list[i].val == name) {
 				if (c == index) return i;
 				c++;
@@ -27,33 +27,43 @@ struct Node {
 		throw std::string("not found: ["+name+"] ["+std::to_string(index)+"] at ["+val+"]");
 	}
 
-	// accessors
-	Node& get(int index) { 
-		return list[ get_index("*", index) ]; 
+	// mutators
+	Node& push(const Node& n) {
+		list.push_back(n);
+		return list.back();
 	}
-	Node& get(const std::string& name, int index=0) { 
-		return list[ get_index(name, index) ]; 
+
+	// accessors
+	Node& get(int index) {
+		return list[ get_index("*", index) ];
+	}
+	Node& get(const std::string& name, int index=0) {
+		return list[ get_index(name, index) ];
 	}
 
 	// const accessors
-	const Node& get(int index) const { 
-		return list[ get_index("*", index) ]; 
+	const Node& get(int index) const {
+		return list[ get_index("*", index) ];
 	}
-	const Node& get(const std::string& name, int index=0) const { 
-		return list[ get_index(name, index) ]; 
+	const Node& get(const std::string& name, int index=0) const {
+		return list[ get_index(name, index) ];
+	}
+
+	// node helpers - show as lisp
+	void showlisp(int indent=0) {
+		if (val == "()") {
+			std::cout << (indent > 0 ? "\n" : "") << std::string(indent, '\t') << "(";
+			for (auto& nn : list)
+				nn.showlisp(indent+1);
+			std::cout << ")";
+		}
+		else {
+			std::cout << val << " ";
+		}
+	}
+	void showtmp(int indent=0) {
+		printf("%s%s\n", std::string(indent*2, ' ').c_str(), val.c_str());
+		for (auto& n : list)
+			n.showtmp(indent + 1);
 	}
 };
-
-
-// node helpers
-void node_show(Node& n, int indent=0) {
-	if (n.val == "()") {
-		std::cout << (indent > 0 ? "\n" : "") << std::string(indent, '\t') << "(";
-		for (auto& nn : n.list)
-			node_show(nn, indent+1);
-		std::cout << ")";
-	}
-	else {
-		std::cout << n.val << " ";
-	}
-}
