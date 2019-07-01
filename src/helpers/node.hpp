@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <sstream>
 
 struct Node {
 	std::string val;
@@ -32,6 +33,10 @@ struct Node {
 		list.push_back(n);
 		return list.back();
 	}
+	Node& pushs(const std::string& s) {
+		list.push_back({ s });
+		return list.back();
+	}
 
 	// accessors
 	Node& get(int index) {
@@ -50,16 +55,18 @@ struct Node {
 	}
 
 	// node helpers - show as lisp
-	void showlisp(int indent=0) {
+	std::string showlisp(int indent=0) {
+		std::string s;
 		if (val == "()") {
-			std::cout << (indent > 0 ? "\n" : "") << std::string(indent, '\t') << "(";
+			s = (indent > 0 ? "\n" : "") + std::string(indent, '\t') + "(";
 			for (auto& nn : list)
-				nn.showlisp(indent+1);
-			std::cout << ")";
+				s += nn.showlisp(indent+1);
+			s += ")";
 		}
 		else {
-			std::cout << val << " ";
+			s += val + " ";
 		}
+		return s;
 	}
 	void showtmp(int indent=0) {
 		printf("%s%s\n", std::string(indent*2, ' ').c_str(), val.c_str());

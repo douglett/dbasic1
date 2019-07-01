@@ -11,13 +11,13 @@ struct ParserBase : ParseTools {
 	const Token& peek(int offset=0) {
 		return tok.tokens.at(pos + offset);
 	}
+
+	// parsing basic tokens
 	int expect(const std::string& val) {
 		if (peek().val == val)
 			return ++pos, 1;
 		return 0;
 	}
-
-	// parsing basic tokens
 	int eoftok() {
 		return peek().val == "[EOF]"; // does not consume EOF
 	}
