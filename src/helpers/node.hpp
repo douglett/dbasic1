@@ -68,9 +68,10 @@ struct Node {
 		}
 		return s;
 	}
-	void showtmp(int indent=0) {
-		printf("%s%s\n", std::string(indent*2, ' ').c_str(), val.c_str());
+	std::string showtmp(int indent=0) {
+		auto s = std::string(indent*2, ' ') + val + "\n";
 		for (auto& n : list)
-			n.showtmp(indent + 1);
+			s += n.showtmp(indent + 1);
+		return s;
 	}
 };
