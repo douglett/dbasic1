@@ -1,7 +1,7 @@
 #include <iostream>
 #include "parsing/tokenizer.hpp"
 #include "parsing/parser.hpp"
-#include "parsing/parseroutput.hpp"
+#include "parsing/compiler.hpp"
 
 void test() {
 	Node n = {"()", {
@@ -31,7 +31,7 @@ int main() {
 	std::cout << par.ast.showtmp() << std::endl;
 
 	printf("::output::\n");
-	ParserOutput out;
-	out.build(par.ast);
-	std::cout << out.output.showlisp() << std::endl;
+	Compiler com;
+	com.build(par.ast);
+	std::cout << com.output.showlisp() << std::endl;
 }

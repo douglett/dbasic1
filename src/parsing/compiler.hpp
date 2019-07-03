@@ -1,7 +1,7 @@
 #pragma once
 #include "../helpers/node.hpp"
 
-struct ParserOutput {
+struct Compiler {
 	Node output;
 
 	int build(const Node& ast) {
