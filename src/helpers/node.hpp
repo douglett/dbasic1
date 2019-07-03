@@ -69,9 +69,9 @@ struct Node {
 		return s;
 	}
 	std::string showtmp(int indent=0) {
-		auto s = std::string(indent*2, ' ') + val + "\n";
+		auto s = std::string(indent*2, ' ') + val;
 		for (auto& n : list)
-			s += n.showtmp(indent + 1);
+			s += "\n" + n.showtmp(indent + 1);
 		return s;
 	}
 };

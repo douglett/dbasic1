@@ -1,6 +1,7 @@
 SRC = main.cpp
 HEAD = helpers/parsetools.hpp helpers/node.hpp \
-	parsing/tokenizer.hpp parsing/parserbase.hpp parsing/parser.hpp
+	parsing/tokenizer.hpp parsing/parserbase.hpp parsing/parser.hpp \
+	parsing/parseroutput.hpp
 
 main.out: $(SRC) $(HEAD)
 	g++ -std=c++14 -Wall -o main.out $(SRC)
