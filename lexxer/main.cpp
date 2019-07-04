@@ -6,5 +6,8 @@ int main() {
 
 	Lexxer lex;
 	lex.input.str("asd bacon cheese");
-	lex.run("main");
+	Lexxer::Node n;
+	int i = lex.run("main", n);
+	printf("result: %d\n", i);
+	lex.shownode(n);
 }

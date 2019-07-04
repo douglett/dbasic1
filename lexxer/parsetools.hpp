@@ -33,6 +33,12 @@ struct ParseTools {
 		return pos >= (int)s.length();
 	}
 
+	static int inlist(const std::string& s, const vecstr& vs) {
+		for (auto& v : vs)
+			if (s == v) return 1;
+		return 0;
+	}
+
 	static vecstr split(const std::string& str) {
 		vecstr vs;
 		std::string s;
