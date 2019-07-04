@@ -3,21 +3,8 @@
 #include "parsing/parser.hpp"
 #include "parsing/compiler.hpp"
 
-void test() {
-	Node n = {"()", {
-		{"module"}, {"$dbasic_program"},
-		{"()", {
-			{"function"}, {"$foo"}, {"()", { {"export \"foo\""} }}, {"()", {{"result i32"}} },
-			{"()", {{"i32.const 0"}} }
-		}}
-	}};
-	std::cout << n.showlisp() << std::endl;
-}
-
 int main() {
 	printf("hello world\n");
-
-//	test(); return 0;
 
 	printf("::tokenize::\n");
 	Tokenizer tok;

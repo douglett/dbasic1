@@ -9,6 +9,9 @@ main.out: $(SRC) $(HEAD)
 run: main.out
 	./main.out
 
+asm: main.out
+	wasm-as output.wasm
+
 clean:
 	rm -f *.out *.o
 	

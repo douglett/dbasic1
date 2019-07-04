@@ -34,38 +34,58 @@ struct Parser : ParserBase {
 		if (expect("function") <= 0) return 0;
 		Node& func = funclist.push({"function", {
 			{"name"},
+			{"locals"},
 			{"block"}
 		}});
-		if (identifier() <= 0) goto err;
-		func.get("name").push({ peek(-1).val });
-		if (!expect("(") || !expect(")") || !eoltok()) goto err;
-		if (block(func.get("block")) <= 0) goto err;
-		if (!expect("end") || !expect("function") || !(eoltok() || eoftok())) goto err;
+		if (identifier() <= 0) goto err; // function name
+		func.get("name").pushs(peek(-1).val); // save function name
+		if (!expect("(") || !expect(")") || !eoltok()) goto err; // args (TEMP)
+		if (locals(func.get("locals")) < 0) goto err; // local dims (can be none)
+		if (block(func.get("block")) <= 0) goto err; // main function block (can be empty)
+		if (!expect("end") || !expect("function") || !(eoltok() || eoftok())) goto err; // function end
 		return 1;
 		err:
 		doerr("function");
 		return -1;
 	}
 
-	int block(Node& blk) {
-		while (peek().val != "end")
-			if   (dim(blk) > 0) ;
-			else goto err;
-		return 1;
+	int locals(Node& locals) {
+		while (true) {
+			int res = dim(locals);
+			if (res == -1) goto err; // error in dim
+			if (res == 0) break; // no more dims
+		}
+		return !!locals.list.size(); // 1 or 0
 		err:
-		doerr("block");
+		doerr("function-locals");
 		return -1;
 	}
 
 	int dim(Node& blk) {
 		if (!expect("dim")) return 0;
-		Node& dimn = blk.push({ "dim" });
-		if (!identifier()) goto err;
-		dimn.push({ "name" }).push({ peek(-1).val });
-		if (!eoltok()) goto err;
+		Node& dim = blk.pushs("dim");
+		if (!identifier()) goto err; // dim name
+		dim.pushs("name").pushs(peek(-1).val); // save name
+		// initial value expression
+		if (expect("=")) {
+			goto err;
+		}
+		else
+			dim.pushs("expr").pushs("0");
+		if (!eoltok()) goto err; // end of line
 		return 1;
 		err:
 		doerr("dim");
+		return -1;
+	}
+
+	int block(Node& blk) {
+		while (peek().val != "end")
+			if   (false) ;
+			else goto err; // unexpected in block
+		return 1;
+		err:
+		doerr("block");
 		return -1;
 	}
 };

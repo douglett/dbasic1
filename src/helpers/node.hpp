@@ -62,6 +62,7 @@ struct Node {
 			for (auto& nn : list)
 				s += nn.showlisp(indent+1);
 			s += ")";
+//			s += std::string(indent, '\t') + ")\n";
 		}
 		else {
 			s += val + " ";
