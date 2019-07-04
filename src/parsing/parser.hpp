@@ -1,9 +1,8 @@
 #pragma once
-#include "../helpers/node.hpp"
 #include "parserbase.hpp"
-#include "tokenizer.hpp"
+#include "parserexpression.hpp"
 
-struct Parser : ParserBase {
+struct Parser : ParserExpression {
 	Node ast;
 
 	Parser(const Tokenizer& t) { tok = t; }
@@ -32,7 +31,7 @@ struct Parser : ParserBase {
 
 	int function(Node& funclist) {
 		if (expect("function") <= 0) return 0;
-		Node& func = funclist.push({"function", {
+		Node& func = funclist.push({"function", { // shouldn't reflow unless funclist is altered.
 			{"name"},
 			{"locals"},
 			{"block"}
@@ -63,15 +62,18 @@ struct Parser : ParserBase {
 
 	int dim(Node& blk) {
 		if (!expect("dim")) return 0;
-		Node& dim = blk.pushs("dim");
+		Node& dim = blk.push({"dim", {
+			{"name"},
+			{"expr"}
+		}});
 		if (!identifier()) goto err; // dim name
-		dim.pushs("name").pushs(peek(-1).val); // save name
+		dim.get("name").pushs(peek(-1).val); // save name
 		// initial value expression
 		if (expect("=")) {
-			goto err;
+			if (expr( dim.get("expr").pushs("??") ) < 1) goto err;
 		}
 		else
-			dim.pushs("expr").pushs("0");
+			dim.get("expr").pushs("0"); // assign default value (0)
 		if (!eoltok()) goto err; // end of line
 		return 1;
 		err:

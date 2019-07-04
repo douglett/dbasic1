@@ -1,3 +1,3 @@
 function f()
-	dim a
+	dim a = 10 + 10
 end function

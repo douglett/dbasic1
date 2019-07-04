@@ -1,6 +1,6 @@
 #pragma once
 #include "../helpers/parsetools.hpp"
-//#include "../helpers/node.hpp"
+#include "../helpers/node.hpp"
 #include "tokenizer.hpp"
 
 struct ParserBase : ParseTools {
@@ -27,12 +27,14 @@ struct ParserBase : ParseTools {
 		return 0;
 	}
 	int identifier() {
-		int start = 1;
-		if (peek().val.length() == 0) return 0;
-		for (char c : peek().val)
-			if (start) { if (!isletter(c)) return 0; start = 0; }
-			else if (!isletter(c) && !isdigit(c)) return 0;
-		return ++pos, 1;
+		if (isidentifier(peek().val))
+			return ++pos, 1;
+		return 0;
+	}
+	int number() {
+		if (isnumber(peek().val))
+			return ++pos, 1;
+		return 0;
 	}
 
 	// error checking

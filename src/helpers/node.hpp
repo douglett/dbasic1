@@ -37,6 +37,10 @@ struct Node {
 		list.push_back({ s });
 		return list.back();
 	}
+	Node& append(const std::vector<Node>& list2) {
+		list.insert(list.end(), list2.begin(), list2.end());
+		return *this;
+	}
 
 	// accessors
 	Node& get(int index) {
@@ -55,21 +59,20 @@ struct Node {
 	}
 
 	// node helpers - show as lisp
-	std::string showlisp(int indent=0) {
+	std::string showlisp(int indent=0) const {
 		std::string s;
 		if (val == "()") {
 			s = (indent > 0 ? "\n" : "") + std::string(indent, '\t') + "(";
 			for (auto& nn : list)
 				s += nn.showlisp(indent+1);
 			s += ")";
-//			s += std::string(indent, '\t') + ")\n";
 		}
 		else {
 			s += val + " ";
 		}
 		return s;
 	}
-	std::string showtmp(int indent=0) {
+	std::string showtmp(int indent=0) const {
 		auto s = std::string(indent*2, ' ') + val;
 		for (auto& n : list)
 			s += "\n" + n.showtmp(indent + 1);

@@ -33,6 +33,19 @@ struct ParseTools {
 		return c == '\n' || c == '\r' || c == '\f';
 	}
 
+	static int isidentifier(const std::string& str) {
+		int start = 1;
+		for (char c : str)
+			if (start) { if (!isletter(c)) return 0; start = 0; }
+			else if (!isletter(c) && !isdigit(c)) return 0;
+		return 1;
+	}
+	static int isnumber(const std::string& str) {
+		for (char c : str)
+			if (!isdigit(c)) return 0;
+		return 1;
+	}
+
 	static vecstr split(const std::string& str) {
 		vecstr vs;
 		std::string s;

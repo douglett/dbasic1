@@ -1,6 +1,6 @@
 SRC = main.cpp
 HEAD = helpers/parsetools.hpp helpers/node.hpp \
-	parsing/tokenizer.hpp parsing/parserbase.hpp parsing/parser.hpp \
+	parsing/tokenizer.hpp parsing/parserbase.hpp parsing/parserexpression.hpp parsing/parser.hpp \
 	parsing/compiler.hpp
 
 main.out: $(SRC) $(HEAD)
