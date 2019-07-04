@@ -1,5 +1,5 @@
 SRC = main.cpp
-HEAD = lexxer.hpp parsetools.hpp rule.hpp astparser.hpp
+HEAD = lexxer.hpp parsetools.hpp rule.hpp
 
 main.out: $(SRC) $(HEAD)
 	g++ -std=c++14 -Wall -o main.out $(SRC)
