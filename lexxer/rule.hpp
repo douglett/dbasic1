@@ -22,7 +22,7 @@ struct Rule : ParseTools {
 			pos = 0;
 			while (pos < tokens.size())
 				rule.list.push_back(mkor());
-			// shownode(rule); // debugging
+			shownode(rule); // debugging
 			return 0;
 		} catch (const std::string& err) {
 			fprintf(stderr, "rule error: %s\n", err.c_str());

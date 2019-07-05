@@ -14,18 +14,20 @@ struct DBasic {
 			Rule::make("main", "function"),
 			Rule::make("emptyline", "WS~ EOL~"),
 			// functions
-			Rule::make("function", "WS~ 'function'~ WS~ IDENTIFIER WS~ arguments EOL~ block function_end~"),
-			// Rule::make("Name", "WS~ IDENTIFIER WS~"),
+			Rule::make("function", "WS~ 'function'~ WS~ IDENTIFIER WS~ arguments EOL~ locals block function_end~"),
 			Rule::make("arguments", "WS~ '('~ WS~ ')'~ WS~"),
 			Rule::make("function_end", "WS 'end' WS 'function' WS EOL"),
 			// block
-			Rule::make("block", "(dim | emptyline~)*"),
+			Rule::make("locals", "(dim | emptyline~)*"),
+			Rule::make("block", "(emptyline~)*"),
 			Rule::make("dim", "WS~ 'dim'~ WS~ IDENTIFIER WS~ ('='~ expr)? WS~ EOL~"),
 			// expressions
-			Rule::make("expr", "WS~ expr_add WS~"),
-			Rule::make("expr_add", "NUMBER WS~ (('+'|'-') WS~ NUMBER)?"),
-			//Rule::make("expr_add", "NUMBER"),
+			Rule::make("expr", "WS~ add WS~"),
+			Rule::make("add", "mul (WS~ '+'~ WS~ mul)?"),
+			Rule::make("mul", "NUMBER (WS~ '*'~ WS~ NUMBER)?"),
 		};
+		printf("here\n");
+		printf("here\n");
 		// insert into lexxer
 		lex.rules.insert(lex.rules.end(), rl.begin(), rl.end());
 	}
