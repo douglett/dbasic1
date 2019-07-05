@@ -40,6 +40,14 @@ struct Lexxer : ParseTools {
 		return s;
 	}
 
+	std::string stringify2(const Node& n) {
+		if (n.list.size() == 0) return n.val;
+		std::string s;
+		for (auto nn : n.list)
+			s += stringify2(nn);
+		return s;
+	}
+
 	/** parsing **/
 
 	int run(const std::string& rulename, Node& n) {
@@ -48,7 +56,7 @@ struct Lexxer : ParseTools {
 		Node result = { rulename };
 		if (runsub(rule.rule, result)) {
 			if (rulename[0] >= 'A' && rulename[0] <= 'Z') // token - stringify it
-				result.list = { {stringify(result.list)} };
+				result.list = { {stringify2(result)} };
 			n.list.push_back(result);
 			return 1;
 		}
