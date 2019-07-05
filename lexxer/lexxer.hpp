@@ -33,18 +33,11 @@ struct Lexxer : ParseTools {
 		return 0;
 	}
 
-	std::string stringify(const std::vector<Node>& list) {
-		std::string s;
-		for (auto& nn : list)
-			s += nn.val + stringify(nn.list);
-		return s;
-	}
-
-	std::string stringify2(const Node& n) {
+	std::string stringify(const Node& n) {
 		if (n.list.size() == 0) return n.val;
 		std::string s;
 		for (auto nn : n.list)
-			s += stringify2(nn);
+			s += stringify(nn);
 		return s;
 	}
 
@@ -52,11 +45,14 @@ struct Lexxer : ParseTools {
 
 	int run(const std::string& rulename, Node& n) {
 		Rule& rule = findrule(rulename);
-		// printf("running rule: %s\n", rulename.c_str());
 		Node result = { rulename };
+		// printf("running rule: %s\n", rulename.c_str());
+		// clear whitespace between named rules
+		// ...
+		// run rule
 		if (runsub(rule.rule, result)) {
 			if (rulename[0] >= 'A' && rulename[0] <= 'Z') // token - stringify it
-				result.list = { {stringify2(result)} };
+				result.list = { {stringify(result)} };
 			n.list.push_back(result);
 			return 1;
 		}
@@ -107,11 +103,14 @@ struct Lexxer : ParseTools {
 		auto pos = input.pos();
 		if (runsub(rule.list[0], n)) return 1;
 		input.seek(pos), error = "";
-		return 0;
+		return 1;
 	}
 
 	int run_mul(const Node& rule, Node& n) {
-		while (run_optional(rule, n)) ;
+		auto pos = input.pos();
+		while (runsub(rule.list[0], n))
+			pos = input.pos();
+		input.seek(pos), error = "";
 		return 1;
 	}
 

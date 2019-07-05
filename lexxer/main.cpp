@@ -23,8 +23,8 @@ struct DBasic {
 			Rule::make("dim", "WS~ 'dim'~ WS~ IDENTIFIER WS~ ('='~ expr)? WS~ EOL~"),
 			// expressions
 			Rule::make("expr", "WS~ expr_add WS~"),
-			// Rule::make("expr_add", "NUMBER WS~ (('+'|'-') WS~ NUMBER)?"),
-			Rule::make("expr_add", "NUMBER"),
+			Rule::make("expr_add", "NUMBER WS~ (('+'|'-') WS~ NUMBER)?"),
+			//Rule::make("expr_add", "NUMBER"),
 		};
 		// insert into lexxer
 		lex.rules.insert(lex.rules.end(), rl.begin(), rl.end());
