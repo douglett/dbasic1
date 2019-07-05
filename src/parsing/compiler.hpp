@@ -56,16 +56,24 @@ struct Compiler : ParseTools {
 		Node b = {"()", { {"block"} }};
 		for (auto& line : block.list)
 			if      (false) ;
-			else if (line.val == "if") b.push(ifcmd(line));
+			else if (line.val == "if") b.push(cmdif(line));
+			else if (line.val == "return") b.push(cmdreturn(line));
 			else    throw std::string("unexpected in block");
 		return b;
 	}
 
-	Node ifcmd(const Node& cmd) {
+	Node cmdif(const Node& cmd) {
 		return {"()", {
 			{"if"},
 			expr(cmd.get("expr").get(0)),
 			block(cmd.get("block"))
+		}};
+	}
+
+	Node cmdreturn(const Node& cmd) {
+		return {"()", {
+			{"return"},
+			expr(cmd.get("expr").get(0))
 		}};
 	}
 

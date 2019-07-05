@@ -84,7 +84,8 @@ struct Parser : ParserExpression {
 	int block(Node& blk) {
 		while (peek().val != "end")
 			if      (false) ;
-			else if (ifcmd(blk)) ;
+			else if (cmdif(blk)) ;
+			else if (cmdret(blk)) ;
 			else    goto err; // unexpected in block
 		return 1;
 		err:
@@ -92,7 +93,7 @@ struct Parser : ParserExpression {
 		return -1;
 	}
 
-	int ifcmd(Node& blk) {
+	int cmdif(Node& blk) {
 		if (!expect("if")) return 0;
 		Node& cmd = blk.push({"if", {
 			{"expr"},
@@ -106,5 +107,16 @@ struct Parser : ParserExpression {
 		err:
 		doerr("if");
 		return -1;
+	}
+
+	int cmdret(Node& blk) {
+		if (!expect("return")) return 0;
+		Node& cmd = blk.pushs("return");
+		auto& ex = cmd.pushs("expr").pushs("0"); // default return
+		if (eoltok()) return 1;
+		if (expr(ex) < 1 || !eoltok()) goto err;
+		return 1;
+		err:
+		return doerr("return"), -1;
 	}
 };

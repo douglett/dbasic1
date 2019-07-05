@@ -3,36 +3,33 @@
 
 struct ParserExpression : ParserBase {
 
-	int expr(Node& expr) {
-		return expr_eq(expr);
+	int expr(Node& ex) {
+		return expr_eq(ex);
 	}
 
-	int expr_eq(Node& expr) {
-		int res = expr_add(expr);
-		if (res < 1) return res;
+	int expr_eq(Node& ex) {
+		if (!expr_add(ex)) return 0;
 		if ((expect("=") || expect("!")) && expect("=")) {
-			expr = {peek(-2).val+"=", { expr, {} }};
-			return expr_add(expr.get(1));
+			ex = {peek(-2).val+"=", { ex, {} }};
+			return expr_add(ex.get(1));
 		}
 		return 1;
 	}
 
-	int expr_add(Node& expr) {
-		int res = expr_mul(expr);
-		if (res < 1) return res;
-		if (expect("+") || expect("-")) {
-			expr = {peek(-1).val, { expr, {} }};
-			return expr_mul(expr.get(1));
+	int expr_add(Node& ex) {
+		if (!expr_mul(ex)) return 0;
+		while (expect("+") || expect("-")) {
+			ex = {peek(-1).val, { ex, {} }};
+			if (!expr_mul(ex.get(1))) return 0;
 		}
 		return 1;
 	}
 
-	int expr_mul(Node& expr) {
-		int res = expr_atom(expr);
-		if (res < 1) return res;
-		if (expect("*") || expect("/")) {
-			expr = {peek(-1).val, { expr, {} }};
-			return expr_atom(expr.get(1));
+	int expr_mul(Node& ex) {
+		if (!expr_atom(ex)) return 0;
+		while (expect("*") || expect("/")) {
+			ex = {peek(-1).val, { ex, {} }};
+			if (!expr_atom(ex.get(1))) return 0;
 		}
 		return 1;
 	}
