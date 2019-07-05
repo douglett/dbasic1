@@ -6,7 +6,7 @@ struct Rule : ParseTools {
 	Node rule;
 	vecstr tokens;
 	unsigned int pos = 0;
-	const Node nEOF = { "[EOF]" };
+	// const Node nEOF = { "[EOF]" };
 
 	static Rule make(const std::string& name, const std::string& rulestr) {
 		Rule r;
@@ -22,7 +22,7 @@ struct Rule : ParseTools {
 			pos = 0;
 			while (pos < tokens.size())
 				rule.list.push_back(mkor());
-			shownode(rule); // debugging
+			// shownode(rule); // debugging
 			return 0;
 		} catch (const std::string& err) {
 			fprintf(stderr, "rule error: %s\n", err.c_str());
@@ -50,12 +50,11 @@ struct Rule : ParseTools {
 		return s == "*" || s == "+" || s == "?" || s == "~";
 	}
 	Node mkatom() {
-		if (pos >= tokens.size())
-			throw std::string("unexpected end-of-line");
-		if (tokens[pos] == "(")
-			return mkbrackets();
+		if (pos >= tokens.size()) throw std::string("unexpected end-of-line");
+		if (tokens[pos] == "(")   return mkbrackets();
+		if (tokens[pos] == "'")   return mkstring();
 		Node n = { tokens[pos++] };
-		// checking
+		// checking?
 		return n;
 	}
 	Node mkbrackets() {
@@ -66,5 +65,14 @@ struct Rule : ParseTools {
 			// else n.list.push_back({ tokens[pos++] });
 			else n.list.push_back( mkor() );
 		throw std::string("expected end bracket");
+	}
+	Node mkstring() {
+		std::string s = "'";
+		pos++;
+		while (pos < tokens.size()) {
+			s += tokens[pos++];
+			if (tokens[pos-1] == "'") return { s };
+		}
+		throw std::string("expected end-of-string");
 	}
 };

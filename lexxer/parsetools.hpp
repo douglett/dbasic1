@@ -26,8 +26,14 @@ struct ParseTools {
 	static int isspecial(char c) {
 		return !isletter(c) && !isdigit(c) && !isspace(c);
 	}
+	static int iswspace(char c) {
+		return c == ' ' || c == '\t';
+	}
 	static int iseol(char c) {
-		return c == '\n' || c == '\r' || c == '\f';
+		return c == '\n' || c == EOF;
+	}
+	static int iseof(char c) {
+		return c == EOF;
 	}
 	static int iseof(const std::string& s, int pos) {
 		return pos >= (int)s.length();

@@ -1,19 +1,32 @@
 #pragma once
 #include "parsetools.hpp"
 #include "rule.hpp"
-#include <sstream>
+#include "input.hpp"
 
 /**
  * Lexxer - takes input string and returns a token string
  */
 struct Lexxer : ParseTools {
 	std::vector<Rule> rules = {
+		// default rules
 		Rule::make("WS", "S*"),
 		Rule::make("NUMBER", "D+"),
 		Rule::make("IDENTIFIER", "L(L|D)*"),
-		Rule::make("main", "(WS IDENTIFIER WS)+")
+		// language rules
+		// // begin
+		// Rule::make("main", "function"),
+		// // functions
+		// Rule::make("function", "WS~ 'function'~ name arguments EOL~ block function_end~"),
+		// Rule::make("name", "WS~ IDENTIFIER WS~"),
+		// Rule::make("arguments", "WS~ '('~ WS~ ')'~ WS~"),
+		// Rule::make("function_end", "WS 'end' WS 'function' WS EOL"),
+		// // block
+		// Rule::make("block", "dim"),
+		// Rule::make("dim", "WS~ 'dim'~ WS~ IDENTIFIER WS~ ('='~ WS~ NUMBER)? WS~ EOL~"),
 	};
-	std::stringstream input;
+	Input input;
+
+	/** helpers **/
 
 	Rule& findrule(const std::string& rulename) {
 		for (auto& r : rules)
@@ -23,28 +36,30 @@ struct Lexxer : ParseTools {
 		exit(1);
 	}
 
-	int peek() {
-		int i = input.tellg();
-		int j = input.peek();
-		input.seekg(i);
-		return j;
+	std::string stringify(const std::vector<Node>& list) {
+		std::string s;
+		for (auto& nn : list)
+			s += nn.val + stringify(nn.list);
+		return s;
 	}
 
 	int showerr(const std::string& msg) {
 		fprintf(stderr, "[%s] error at position [%d]\n",
 			msg.c_str(),
-			(int)input.tellg() );
+			(int)input.pos() );
 		return 0;
 	}
 
+	/** parsing **/
+
 	int run(const std::string& rulename, Node& n) {
 		Rule& rule = findrule(rulename);
-		n.list.push_back({ rulename });
-		printf("running rule: %s\n", rulename.c_str());
-		if (runsub(rule.rule, n.list.back())) {
-			//printf("  [%d] [%d] [%s]\n", pos, (int)input.tellg(), "?");
-			if (rulename[0] >= 'A' && rulename[0] <= 'Z')
-				n.list.back() = { stringify(n.list.back()) }; // token - stringify it
+		// printf("running rule: %s\n", rulename.c_str());
+		Node result = { rulename };
+		if (runsub(rule.rule, result)) {
+			if (rulename[0] >= 'A' && rulename[0] <= 'Z') // token - stringify it
+				result.list = { {stringify(result.list)} };
+			n.list.push_back(result);
 			return 1;
 		}
 		return showerr(rulename);
@@ -52,22 +67,24 @@ struct Lexxer : ParseTools {
 
 	int runsub(const Node& rule, Node& n) {
 		// printf("[%s]\n", rule.val.c_str());
-		if (inlist(rule.val, {"S", "L", "D"})) return run_char(rule, n);
-//		if (rule.val == "S") return run_char(rule, "S", n);
-//		if (rule.val == "L") return run_char(rule, "L", n);
-//		if (rule.val == "D") return run_char(rule, "D", n);
+		if (inlist(rule.val, {"S", "L", "D", "EOL", "EOF"})) return run_char(rule, n);
 		if (rule.val == "()") return run_brackets(rule, n);
-		if (rule.val == "+") return run_plus(rule, n);
+		if (rule.val == "~") return run_exclude(rule);
+		if (rule.val == "?") return run_optional(rule, n);
 		if (rule.val == "*") return run_mul(rule, n);
+		if (rule.val == "+") return run_plus(rule, n);
 		if (rule.val == "|") return run_or(rule, n);
+		if (rule.val[0] == '\'' && rule.val.back() == '\'') return run_literal(rule, n);
 		return run(rule.val, n); // run rule by name
 	}
 
 	int run_char(const Node& rule, Node& n) {
 		int res = 0;
-		if (rule.val == "S") res = isspace(peek());
-		if (rule.val == "L") res = isletter(peek());
-		if (rule.val == "D") res = isdigit(peek());
+		if (rule.val == "S") res = iswspace(input.peek());
+		if (rule.val == "L") res = isletter(input.peek());
+		if (rule.val == "D") res = isdigit(input.peek());
+		if (rule.val == "EOL") res = iseol(input.peek());
+		if (rule.val == "EOF") res = iseof(input.peek());
 		if (res) {
 			n.list.push_back({ std::string()+(char)input.get() });
 			return 1;
@@ -81,30 +98,43 @@ struct Lexxer : ParseTools {
 		return 1;
 	}
 
+	int run_exclude(const Node& rule) {
+		Node n;
+		return runsub(rule.list[0], n);
+	}
+
+	int run_optional(const Node& rule, Node& n) {
+		auto pos = input.pos();
+		if (runsub(rule.list[0], n)) return 1;
+		input.seek(pos);
+		return 0;
+	}
+
+	int run_mul(const Node& rule, Node& n) {
+		while (run_optional(rule, n)) ;
+		return 1;
+	}
+
 	int run_plus(const Node& rule, Node& n) {
 		if (!runsub(rule.list[0], n)) return 0;
 		return run_mul(rule, n);
 	}
 
-	int run_mul(const Node& rule, Node& n) {
-		int pos = input.tellg();
-		while (runsub(rule.list[0], n))
-			pos = input.tellg();
-		input.seekg(pos);
-		return 1;
-	}
-
 	int run_or(const Node& rule, Node& n) {
-		int pos = input.tellg();
+		auto pos = input.pos();
 		if (runsub(rule.list[0], n)) return 1;
-		input.seekg(pos);
+		input.seek(pos);
 		return runsub(rule.list[1], n);
 	}
 
-	std::string stringify(Node& n) {
-		std::string s = n.val;
-		for (auto& nn : n.list)
-			s += stringify(nn);
-		return s;
+	int run_literal(const Node& rule, Node& n) {
+		auto str = rule.val.substr(1, rule.val.length()-2);
+		// printf("running string [%s]\n", str.c_str());
+		int pos = input.pos();
+		for (auto c : str)
+			if   (input.peek() == c) input.get();
+			else return input.seek(pos), 0;
+		n.list.push_back({ str });
+		return 1;
 	}
 };
