@@ -12,10 +12,8 @@ struct Compiler : ParseTools {
 
 	Node function(const Node& func) {
 		auto name = func.find("IDENTIFIER").list[0].val;
-		Node n = {"()", { 
-			{"func"},
-			{"$"+name},
-			{"(export \""+name+"\")"},
+		Node n = {"()", {
+			{"func $"+name+" (export \""+name+"\")"},
 			{"(result i32)"},
 			{"(i32.const 0)"},
 		}};
