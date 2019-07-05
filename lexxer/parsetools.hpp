@@ -9,12 +9,36 @@ struct ParseTools {
 	struct Node {
 		std::string val;
 		std::vector<Node> list;
+
+		Node& find(const std::string& id) {
+			for (auto& n : list)
+				if (n.val == id) return n;
+			throw std::string("missing node: "+id);
+		}
+		const Node& find(const std::string& id) const {
+			for (auto& n : list)
+				if (n.val == id) return n;
+			throw std::string("missing node: "+id);
+		}
 	};
 
 	static void shownode(const Node& n, int ind=0) {
 		printf("%s[%s]\n", std::string(ind*2, ' ').c_str(), n.val.c_str());
 		for (auto& nn : n.list)
 			shownode(nn, ind+1);
+	}
+	static std::string showlisp(const Node& n, int ind=0) {
+		auto is = std::string(ind*2, ' ');
+		std::string s;
+		if (n.val == "()") {
+			s = is + "(\n";
+			for (auto& nn : n.list)
+				s += showlisp(nn, ind+1);
+			s += is + ")\n";
+		}
+		else
+			s = is + n.val + "\n";
+		return s;
 	}
 
 	static int isletter(char c) {

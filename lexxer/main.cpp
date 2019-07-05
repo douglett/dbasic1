@@ -1,4 +1,5 @@
 #include "lexxer.hpp"
+#include "compiler.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -35,6 +36,12 @@ struct DBasic {
 		// printf("result: %d\n", res);
 		if (res) {
 			lex.shownode(ast);
+			Compiler com;
+			auto output = com.compile(ast);
+			// c.shownode(output);
+			std::cout << com.showlisp(output) << std::endl;
+			std::fstream fs("testout.wast", std::ios::out);
+			fs << com.showlisp(output);
 			return 0;
 		}
 		else {
