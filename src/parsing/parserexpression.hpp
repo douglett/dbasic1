@@ -8,11 +8,11 @@ struct ParserExpression : ParserBase {
 	}
 
 	int expr_add(Node& expr) {
-		int res = expr_atom(expr);
+		int res = expr_mul(expr);
 		if (res < 1) return res;
 		if (expect("+") || expect("-")) {
 			expr = {peek(-1).val, { expr, {} }};
-			return expr_atom(expr.get(1));
+			return expr_mul(expr.get(1));
 		}
 		return 1;
 	}

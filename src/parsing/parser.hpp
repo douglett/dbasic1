@@ -8,12 +8,12 @@ struct Parser : ParserExpression {
 	Parser(const Tokenizer& t) { tok = t; }
 
 	int parse() {
-		for (auto t : tok.tokens)
-			printf("  [%s]\n", t.val.c_str());
+		//for (auto t : tok.tokens)
+		//	printf("  [%s]\n", t.val.c_str());
 		pos = 0;
 		int result = prog(ast);
 		printf("parse result: %d\n", result);
-		return 0;
+		return result;
 	}
 
 	int prog(Node& ast) {
