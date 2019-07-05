@@ -4,7 +4,17 @@
 struct ParserExpression : ParserBase {
 
 	int expr(Node& expr) {
-		return expr_add(expr);
+		return expr_eq(expr);
+	}
+
+	int expr_eq(Node& expr) {
+		int res = expr_add(expr);
+		if (res < 1) return res;
+		if ((expect("=") || expect("!")) && expect("=")) {
+			expr = {peek(-2).val+"=", { expr, {} }};
+			return expr_add(expr.get(1));
+		}
+		return 1;
 	}
 
 	int expr_add(Node& expr) {

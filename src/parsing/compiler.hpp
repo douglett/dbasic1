@@ -34,7 +34,7 @@ struct Compiler : ParseTools {
 			{"(result i32)"}
 		}};
 		locals(func.get("locals"), fn); // local variables
-		block(func.get("block"), fn); // function block
+		fn.push( block(func.get("block")) ); // function block
 		fn.push({"()", { {"i32.const 0"} }}); // return value
 		return fn;
 	}
@@ -52,18 +52,32 @@ struct Compiler : ParseTools {
 		fn.append(local_set.list);
 	}
 
-	void block(const Node& block, Node& parent) {
+	Node block(const Node& block) {
+		Node b = {"()", { {"block"} }};
 		for (auto& line : block.list)
 			if      (false) ;
-			else if (line.val == "if") ; // TODO
+			else if (line.val == "if") b.push(ifcmd(line));
 			else    throw std::string("unexpected in block");
+		return b;
+	}
+
+	Node ifcmd(const Node& cmd) {
+		return {"()", {
+			{"if"},
+			expr(cmd.get("expr").get(0)),
+			block(cmd.get("block"))
+		}};
 	}
 
 	Node expr(const Node& ex) {
 		auto& val = ex.val;
 		if (isnumber(val)) return { "(i32.const "+val+")" };
 		if (isidentifier(val)) return { "(get_local $"+val+")" };
-		if (val == "+") return {"()", { {"i32.add"}, expr(ex.get(0)), expr(ex.get(1)) }};
+		if (val == "==") return {"()", { {"i32.eq" }, expr(ex.get(0)), expr(ex.get(1)) }};
+		if (val == "+" ) return {"()", { {"i32.add"}, expr(ex.get(0)), expr(ex.get(1)) }};
+		if (val == "-" ) return {"()", { {"i32.sub"}, expr(ex.get(0)), expr(ex.get(1)) }};
+		if (val == "*" ) return {"()", { {"i32.mul"}, expr(ex.get(0)), expr(ex.get(1)) }};
+		if (val == "/" ) return {"()", { {"i32.div"}, expr(ex.get(0)), expr(ex.get(1)) }};
 		throw std::string("unexpected in expression");
 	};
 

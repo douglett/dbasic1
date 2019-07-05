@@ -83,11 +83,28 @@ struct Parser : ParserExpression {
 
 	int block(Node& blk) {
 		while (peek().val != "end")
-			if   (false) ;
-			else goto err; // unexpected in block
+			if      (false) ;
+			else if (ifcmd(blk)) ;
+			else    goto err; // unexpected in block
 		return 1;
 		err:
 		doerr("block");
+		return -1;
+	}
+
+	int ifcmd(Node& blk) {
+		if (!expect("if")) return 0;
+		Node& cmd = blk.push({"if", {
+			{"expr"},
+			{"block"}
+		}});
+		auto& ex = cmd.get("expr").pushs("??");
+		if (expr(ex) < 1 || !expect("then") || !eoltok()) goto err;
+		if (block(cmd.get("block")) < 1) goto err;
+		if (!expect("end") || !expect("if") || !eoltok()) goto err;
+		return 1;
+		err:
+		doerr("if");
 		return -1;
 	}
 };
