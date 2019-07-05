@@ -11,20 +11,10 @@ struct Lexxer : ParseTools {
 		// default rules
 		Rule::make("WS", "S*"),
 		Rule::make("NUMBER", "D+"),
-		Rule::make("IDENTIFIER", "L(L|D)*"),
-		// language rules
-		// // begin
-		// Rule::make("main", "function"),
-		// // functions
-		// Rule::make("function", "WS~ 'function'~ name arguments EOL~ block function_end~"),
-		// Rule::make("name", "WS~ IDENTIFIER WS~"),
-		// Rule::make("arguments", "WS~ '('~ WS~ ')'~ WS~"),
-		// Rule::make("function_end", "WS 'end' WS 'function' WS EOL"),
-		// // block
-		// Rule::make("block", "dim"),
-		// Rule::make("dim", "WS~ 'dim'~ WS~ IDENTIFIER WS~ ('='~ WS~ NUMBER)? WS~ EOL~"),
+		Rule::make("IDENTIFIER", "L(L|D)*")
 	};
 	Input input;
+	std::string error;
 
 	/** helpers **/
 
@@ -36,18 +26,18 @@ struct Lexxer : ParseTools {
 		exit(1);
 	}
 
+	int showerr(const std::string& msg) {
+		fprintf(stderr, "error rule [%s], line [%d]\n",
+			msg.c_str(),
+			input.pos().line+1 );
+		return 0;
+	}
+
 	std::string stringify(const std::vector<Node>& list) {
 		std::string s;
 		for (auto& nn : list)
 			s += nn.val + stringify(nn.list);
 		return s;
-	}
-
-	int showerr(const std::string& msg) {
-		fprintf(stderr, "[%s] error at position [%d]\n",
-			msg.c_str(),
-			(int)input.pos() );
-		return 0;
 	}
 
 	/** parsing **/
@@ -62,7 +52,9 @@ struct Lexxer : ParseTools {
 			n.list.push_back(result);
 			return 1;
 		}
-		return showerr(rulename);
+		error = "["+rulename+"] > " + error;
+		// return showerr(rulename);
+		return 0;
 	}
 
 	int runsub(const Node& rule, Node& n) {
@@ -106,7 +98,7 @@ struct Lexxer : ParseTools {
 	int run_optional(const Node& rule, Node& n) {
 		auto pos = input.pos();
 		if (runsub(rule.list[0], n)) return 1;
-		input.seek(pos);
+		input.seek(pos), error = "";
 		return 0;
 	}
 
@@ -123,14 +115,14 @@ struct Lexxer : ParseTools {
 	int run_or(const Node& rule, Node& n) {
 		auto pos = input.pos();
 		if (runsub(rule.list[0], n)) return 1;
-		input.seek(pos);
+		input.seek(pos), error = "";
 		return runsub(rule.list[1], n);
 	}
 
 	int run_literal(const Node& rule, Node& n) {
 		auto str = rule.val.substr(1, rule.val.length()-2);
 		// printf("running string [%s]\n", str.c_str());
-		int pos = input.pos();
+		auto pos = input.pos();
 		for (auto c : str)
 			if   (input.peek() == c) input.get();
 			else return input.seek(pos), 0;

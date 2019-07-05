@@ -11,13 +11,14 @@ struct DBasic {
 		std::vector<Rule> rl = {
 			// entry
 			Rule::make("main", "function"),
+			Rule::make("emptyline", "WS~ EOL~"),
 			// functions
 			Rule::make("function", "WS~ 'function'~ name arguments EOL~ block function_end~"),
 			Rule::make("name", "WS~ IDENTIFIER WS~"),
 			Rule::make("arguments", "WS~ '('~ WS~ ')'~ WS~"),
 			Rule::make("function_end", "WS 'end' WS 'function' WS EOL"),
 			// block
-			Rule::make("block", "dim"),
+			Rule::make("block", "(dim | emptyline~)*"),
 			Rule::make("dim", "WS~ 'dim'~ WS~ IDENTIFIER WS~ ('='~ WS~ NUMBER)? WS~ EOL~"),
 		};
 		// insert into lexxer
@@ -31,10 +32,16 @@ struct DBasic {
 	int parse() {
 		ast = { "result" };
 		int res = lex.run("main", ast);
-		printf("result: %d\n", res);
-		if (res)
+		// printf("result: %d\n", res);
+		if (res) {
 			lex.shownode(ast);
-		return res;
+			return 0;
+		}
+		else {
+			std::cerr << lex.error << std::endl
+				<< lex.input.report() << std::endl;
+			return 1; // invert - 1 = error
+		}
 	}
 };
 
@@ -51,5 +58,5 @@ int main() {
 
 	DBasic db;
 	if (db.load()) return 1;
-	return db.parse();
+	db.parse();
 }
