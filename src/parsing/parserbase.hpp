@@ -18,6 +18,16 @@ struct ParserBase : ParseTools {
 			return ++pos, 1;
 		return 0;
 	}
+	int expectm(const vecstr& vs) {
+		for (auto& s : vs)
+			if (!expect(s)) return 0;
+		return 1;
+	}
+	int acceptm(const vecstr& vs) {
+		int p = pos;
+		if (expectm(vs)) return 1;
+		return pos = p, 0;
+	}
 	int eoftok() {
 		return peek().val == "[EOF]"; // does not consume EOF
 	}

@@ -7,7 +7,7 @@ struct Compiler : ParseTools {
 
 	int build(const Node& ast) {
 		try {
-			output = prog(ast);
+			output = module(ast);
 		}
 		catch (const std::string& err) {
 			fprintf(stderr, "compile error: %s\n", err.c_str());
@@ -15,13 +15,18 @@ struct Compiler : ParseTools {
 		return 0;
 	}
 
-	Node prog(const Node& ast) {
+	void error(const std::string& msg, const Node& n) {
+		auto msgstr = msg + " (got '" + n.val + "')";
+		throw msgstr;
+	}
+
+	Node module(const Node& ast) {
 		Node p = {"()", {
 			{"module"}, {"$dbasic_program"}
 		}};
 		for (auto& fn : ast.list)
 			if   (fn.val == "function") p.push(function(fn));
-			else throw std::string("expected function");
+			else error("unexpected in module", fn);
 		return p;
 	}
 
@@ -58,7 +63,7 @@ struct Compiler : ParseTools {
 			if      (false) ;
 			else if (line.val == "if") b.push(cmdif(line));
 			else if (line.val == "return") b.push(cmdreturn(line));
-			else    throw std::string("unexpected in block");
+			else    error("unexpected in block", line);
 		return b;
 	}
 
@@ -81,12 +86,18 @@ struct Compiler : ParseTools {
 		auto& val = ex.val;
 		if (isnumber(val)) return { "(i32.const "+val+")" };
 		if (isidentifier(val)) return { "(get_local $"+val+")" };
-		if (val == "==") return {"()", { {"i32.eq" }, expr(ex.get(0)), expr(ex.get(1)) }};
-		if (val == "+" ) return {"()", { {"i32.add"}, expr(ex.get(0)), expr(ex.get(1)) }};
-		if (val == "-" ) return {"()", { {"i32.sub"}, expr(ex.get(0)), expr(ex.get(1)) }};
-		if (val == "*" ) return {"()", { {"i32.mul"}, expr(ex.get(0)), expr(ex.get(1)) }};
-		if (val == "/" ) return {"()", { {"i32.div"}, expr(ex.get(0)), expr(ex.get(1)) }};
-		throw std::string("unexpected in expression");
+		std::string op;
+		if      (val == "==") op = "i32.eq";
+		else if (val == ">" ) op = "i32.gt_s";
+		else if (val == ">=") op = "i32.ge_s";
+		else if (val == "<" ) op = "i32.lt_s";
+		else if (val == "<=") op = "i32.le_s";
+		else if (val == "+" ) op = "i32.add";
+		else if (val == "-" ) op = "i32.sub";
+		else if (val == "*" ) op = "i32.mul";
+		else if (val == "/" ) op = "i32.div";
+		else    error("unexpected in expression", ex);
+		return {"()", { {op}, expr(ex.get(0)), expr(ex.get(1)) }};
 	};
 
 //	int in_list(const std::vector<std::string>>& list, const std::string& val) {
