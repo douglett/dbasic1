@@ -121,46 +121,58 @@
 <h3>For:</h3>
 <div class="example_container">
 	<div class="example left">
-		<code>function foo()</code>
-		<code>	dim i</code>
-		<code>	dim a</code>
-		<code>	for i = 1 to 10 [step 1]</code>
-		<code>		a = a + 1</code>
-		<code>	next [i]</code>
-		<code>end function</code>
+		<code>
+function foo()
+	dim i
+	dim a
+	for i = 1 to 10 [step 1]
+		a = a + 1
+	next [i]
+end function
+		</code>
 	</div>
 	<div class="example right">
-		<code>(module $dbasic_program</code>
-		<code>	(func $foo (export "foo") (result i32)</code>
-		<code>		(local $i i32)</code>
-		<code>		(local $a i32)</code>
-		<code>		(local.set $i (i32.const 0))</code>
-		<code>		(local.set $a (i32.const 0))</code>
-		<code>		(local.set $i (i32.const 1))</code>
-		<code>		(loop $loop0_top (block $loop0_end </code>
-		<code>			;; ... </code>
-		<code>		))</code>
-		<code>		(i32.const 0)</code>
-		<code>	)</code>
-		<code>)</code>
+		<code>
+(module $dbasic_program
+	(func $foo (export "foo") (result i32)
+		(local $i i32)
+		(local $a i32)
+		(local.set $i (i32.const 0))
+		(local.set $a (i32.const 0))
+		(local.set $i (i32.const 1))
+		(loop $loop0
+			(block $loop0_continue
+				(br_if $loop0
+					(i32.gt (get_local $i) (i32.const 10)))
+				(set_local $a
+					(i32.add
+						(get_local $a)
+						(i32.const 1)))
+				(br $loop0_continue)
+			)
+		)
+		(i32.const 0)
+	)
+)
+		</code>
 	</div>
 </div>
 
-<h3>Memory:</h3>
+<h3>Memory (notes):</h3>
 <div class="example_container">
 	<div class="example left">
 		<code>
-			;; linecomment
-			; blockcomment? ;
-			(; blockcomment? ;)
+;; linecomment
+; blockcomment? ;
+(; blockcomment? ;)
 
-			;; string format? can be empty or excluded?
-			(data (i32.const 4) "\0")
-			(set_local
-				(i32.get 
-					offset=4 ;; can be variable?
-					(i32.const 0) ;; what is this?
-				))
+;; string format? can be empty or excluded?
+(data (i32.const 4) "\0")
+(set_local
+	(i32.get 
+		offset=4 ;; can be variable?
+		(i32.const 0) ;; what is this?
+	))
 		</code>
 	</div>
 	<div class="example right">
@@ -172,20 +184,19 @@
 
 .example_container {
 	display: flex;
-	/*flex-wrap: wrap;*/
-	/*border: 1px solid black;*/
 }
 .example {
-	/*box-sizing: border-box;*/
 	width: 50%;
 	padding: 5px;
 	margin: 5px;
 	border: 1px solid black;
-	/*white-space: pre;*/
 }
 code {
 	display: block;
 	white-space: pre;
+	margin-top: -1em;
+	margin-bottom: -1em;
+	tab-size: 2;
 }
 
 </style>
