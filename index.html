@@ -146,6 +146,27 @@
 	</div>
 </div>
 
+<h3>Memory:</h3>
+<div class="example_container">
+	<div class="example left">
+		<code>
+			;; linecomment
+			; blockcomment? ;
+			(; blockcomment? ;)
+
+			;; string format? can be empty or excluded?
+			(data (i32.const 4) "\0")
+			(set_local
+				(i32.get 
+					offset=4 ;; can be variable?
+					(i32.const 0) ;; what is this?
+				))
+		</code>
+	</div>
+	<div class="example right">
+	</div>
+</div>
+
 
 <style type="text/css">
 
