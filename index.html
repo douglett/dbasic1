@@ -12,12 +12,14 @@
 <h3>Empty program:</h3>
 <div class="example_container">
 	<div class="example left">
-		<code>;; (empty)</code>
+		<code>
+;; (empty)
+		</code>
 	</div>
 	<div class="example right">
-		<code>(module $dbasic_program</code>
-		<code>	;; (empty)</code>
-		<code>)</code>
+		<code>(module $dbasic_program
+			;; (empty)
+		)</code>
 	</div>
 </div>
 
@@ -25,18 +27,22 @@
 <h3>Function:</h3>
 <div class="example_container">
 	<div class="example left">
-		<code>function foo()</code>
-		<code>	;; (empty)</code>
-		<code>end function</code>
+		<code>
+function foo()
+	;; (empty)
+end function
+		</code>
 	</div>
 	<div class="example right">
-		<code>(module $dbasic_program</code>
-		<code>	;; (export "foo" (func $foo)) ;; out of line export?</code>
-		<code>	(func $foo (export "foo") (result i32)</code>
-		<code>		;; (empty)</code>
-		<code>		(i32.const 0)</code>
-		<code>	)</code>
-		<code>)</code>
+		<code>
+(module $dbasic_program
+	;; (export "foo" (func $foo)) ;; out of line export?
+	(func $foo (export "foo") (result i32)
+		;; (empty)
+		(i32.const 0)
+	)
+)
+		</code>
 	</div>
 </div>
 
@@ -44,23 +50,27 @@
 <h3>Variables:</h3>
 <div class="example_container">
 	<div class="example left">
-		<code>dim b = 10</code>
-		<code>function foo()</code>
-		<code>	dim a</code>
-		<code>	dim b = 0</code>
-		<code>end function</code>
+		<code>
+dim b = 10
+function foo()
+	dim a
+	dim b = 0
+end function
+		</code>
 	</div>
 	<div class="example right">
-		<code>(module $dbasic_program</code>
-		<code>	(global $b (export "b") i32 (i32.const 0))</code>
-		<code>	(func $foo (export "foo") (result i32)</code>
-		<code>		(local $a i32)</code>
-		<code>		(local $b i32)</code>
-		<code>		(local.set $a (i32.const 0))</code>
-		<code>		(local.set $b (i32.const 0))</code>
-		<code>		(i32.const 0)</code>
-		<code>	)</code>
-		<code>)</code>
+		<code>
+(module $dbasic_program
+	(global $b (export "b") i32 (i32.const 0))
+	(func $foo (export "foo") (result i32)
+		(local $a i32)
+		(local $b i32)
+		(local.set $a (i32.const 0))
+		(local.set $b (i32.const 0))
+		(i32.const 0)
+	)
+)
+		</code>
 	</div>
 </div>
 
@@ -68,24 +78,31 @@
 <h3>If:</h3>
 <div class="example_container">
 	<div class="example left">
-		<code>function foo()</code>
-		<code>	dim a = 0</code>
-		<code>	if a == 0 [then]</code>
-		<code>		return 1</code>
-		<code>	end [if]</code>
-		<code>end function</code>
+		<code>
+function foo()
+	dim a = 0
+	if a == 0 [then]
+		return 1
+	end [if]
+end function
+		</code>
 	</div>
 	<div class="example right">
-		<code>(module $dbasic_program</code>
-		<code>	(func $foo (export "foo") (result i32)</code>
-		<code>		(local $a i32)</code>
-		<code>		(local.set $a (i32.const 0))</code>
-		<code>		(if (i32.eq (local.get $a) (i32.const 0)) (block </code>
-		<code>			(return (i32.const 1))</code>
-		<code>		))</code>
-		<code>		(i32.const 0)</code>
-		<code>	)</code>
-		<code>)</code>
+		<code>
+(module $dbasic_program
+	(func $foo (export "foo") (result i32)
+		(local $a i32)
+		(local.set $a (i32.const 0))
+		(if 
+			(i32.eq (local.get $a) (i32.const 0)) 
+			(block 
+				(return (i32.const 1))
+			)
+		)
+		(i32.const 0)
+	)
+)
+		</code>
 	</div>
 </div>
 
@@ -93,27 +110,31 @@
 <h3>While:</h3>
 <div class="example_container">
 	<div class="example left">
-		<code>function foo()</code>
-		<code>	dim a = 0</code>
-		<code>	while a < 10 [do]</code>
-		<code>		a = a + 1</code>
-		<code>	[wend|end [while]]</code>
-		<code>end function</code>
+		<code>
+function foo()
+	dim a = 0
+	while a < 10 [do]
+		a = a + 1
+	[wend|end [while]]
+end function
+		</code>
 	</div>
 	<div class="example right">
-		<code>(module $dbasic_program</code>
-		<code>	(func $foo (export "foo") (result i32)</code>
-		<code>		(local $a i32)</code>
-		<code>		(local.set $a (i32.const 0))</code>
-		<code>		(loop $loop1_top (block $loop1_end </code>
-		<code>			(if (i32.lt_s (local.get $a) (i32.const 10)) (block </code>
-		<code>				(local.set $a (i32.add (local.get $a) (i32.const 1)))</code>
-		<code>				(br $loop1_top)</code>
-		<code>			))</code>
-		<code>		))</code>
-		<code>		(i32.const 0)</code>
-		<code>	)</code>
-		<code>)</code>
+		<code>
+(module $dbasic_program
+	(func $foo (export "foo") (result i32)
+		(local $a i32)
+		(local.set $a (i32.const 0))
+		(loop $loop1_top (block $loop1_end 
+			(if (i32.lt_s (local.get $a) (i32.const 10)) (block 
+				(local.set $a (i32.add (local.get $a) (i32.const 1)))
+				(br $loop1_top)
+			))
+		))
+		(i32.const 0)
+	)
+)
+		</code>
 	</div>
 </div>
 
