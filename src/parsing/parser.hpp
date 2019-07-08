@@ -8,8 +8,8 @@ struct Parser : ParserExpression {
 	Parser(const Tokenizer& t) { tok = t; }
 
 	int parse() {
-		for (auto t : tok.tokens)
-			printf("  [%s]\n", t.val.c_str());
+		// for (auto t : tok.tokens)
+		// 	printf("  [%s]\n", t.val.c_str());
 		pos = 0;
 		int result = prog(ast);
 		printf("parse result: %d\n", result);
@@ -18,15 +18,11 @@ struct Parser : ParserExpression {
 
 	int prog(Node& ast) {
 		ast = {"prog"};
-		//auto& fn = ast.get("functions");
 		while (!eoftok())
 			if      (lineend() > 0) ;
 			else if (function(ast) > 0) ;
-			else    goto err;
+			else    return doerr("root-scope");
 		return 1;
-		err:
-		fprintf(stderr, "root-scope error line %d\n", peek().line);
-		return -1;
 	}
 
 	int function(Node& funclist) {
@@ -83,8 +79,9 @@ struct Parser : ParserExpression {
 
 	int block(Node& blk) {
 		while (peek().val != "end")
-			if      (false) ;
+			if      (lineend()) ;
 			else if (cmdif(blk)) ;
+			else if (cmdwhile(blk)) ;
 			else if (cmdret(blk)) ;
 			else    goto err; // unexpected in block
 		return 1;
@@ -107,6 +104,22 @@ struct Parser : ParserExpression {
 		err:
 		doerr("if");
 		return -1;
+	}
+
+	int cmdwhile(Node& blk) {
+		if (!expect("while")) return 0;
+		Node& cmd = blk.push({"while", {
+			{"expr"},
+			{"block"}
+		}});
+		int ok = 
+			expr( cmd.get("expr").pushs("??") ) == 1 
+			&& expect("do") 
+			&& lineend()
+			&& block( cmd.get("block") ) == 1
+			&& expectm({ "end", "while" }) 
+			&& lineend();
+		return ok ? 1 : doerr("if");
 	}
 
 	int cmdret(Node& blk) {

@@ -6,4 +6,7 @@ function f()
 			return 1
 		end if
 	end if
+
+	while a > 0 do
+	end while
 end function

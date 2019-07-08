@@ -9,12 +9,6 @@ struct ParserExpression : ParserBase {
 
 	int expr_eq(Node& ex) {
 		if (!expr_add(ex)) return 0;
-//		if ((expect("=") || expect("!")) && expect("=")) {
-//			ex = {peek(-2).val+"=", { ex, {} }};
-//			return expr_add(ex.get(1));
-//		}
-//		return 1;
-//
 		std::string op;
 		if      (acceptm({">", "="}) || acceptm({"<", "="})) op = peek(-2).val + "=";
 		else if (acceptm({"=", "="}) || acceptm({"!", "="})) op = peek(-2).val + "=";
