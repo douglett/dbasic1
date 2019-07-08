@@ -8,5 +8,6 @@ function f()
 	end if
 
 	while a > 0 do
+		return 10
 	end while
 end function

@@ -61,8 +61,9 @@ struct Compiler : ParseTools {
 		Node b = {"()", { {"block"} }};
 		for (auto& line : block.list)
 			if      (false) ;
-			else if (line.val == "if") b.push(cmdif(line));
-			else if (line.val == "return") b.push(cmdreturn(line));
+			else if (line.val == "if"    ) b.push( cmdif(line) );
+			else if (line.val == "while" ) b.push( cmdwhile(line) );
+			else if (line.val == "return") b.push( cmdreturn(line) );
 			else    error("unexpected in block", line);
 		return b;
 	}
@@ -72,6 +73,26 @@ struct Compiler : ParseTools {
 			{"if"},
 			expr(cmd.get("expr").get(0)),
 			block(cmd.get("block"))
+		}};
+	}
+
+	Node cmdwhile(const Node& cmd) {
+		std::string lmain = "$loop$0", lcontinue = lmain+"$continue";
+		return {"()", {
+			{"block "+lmain},
+			{"()", {
+				{"loop "+lcontinue},
+				{"()", {
+					{"br_if "+lmain},
+					{"()", {
+						{"i32.ne"},
+						{"(i32.const 1)"}, // negate expression
+						expr( cmd.get("expr").get(0) ) // while-true expression
+					}}
+				}},
+				block( cmd.get("block") ), // main block
+				{"(br "+lcontinue+")"} // do loop
+			}}
 		}};
 	}
 
