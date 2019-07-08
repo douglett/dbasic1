@@ -8,8 +8,8 @@ struct Parser : ParserExpression {
 	Parser(const Tokenizer& t) { tok = t; }
 
 	int parse() {
-		//for (auto t : tok.tokens)
-		//	printf("  [%s]\n", t.val.c_str());
+		for (auto t : tok.tokens)
+			printf("  [%s]\n", t.val.c_str());
 		pos = 0;
 		int result = prog(ast);
 		printf("parse result: %d\n", result);
@@ -20,7 +20,7 @@ struct Parser : ParserExpression {
 		ast = {"prog"};
 		//auto& fn = ast.get("functions");
 		while (!eoftok())
-			if      (eoltok() > 0) ;
+			if      (lineend() > 0) ;
 			else if (function(ast) > 0) ;
 			else    goto err;
 		return 1;
@@ -38,10 +38,10 @@ struct Parser : ParserExpression {
 		}});
 		if (identifier() <= 0) goto err; // function name
 		func.get("name").pushs(peek(-1).val); // save function name
-		if (!expect("(") || !expect(")") || !eoltok()) goto err; // args (TEMP)
+		if (!expect("(") || !expect(")") || !lineend()) goto err; // args (TEMP)
 		if (locals(func.get("locals")) < 0) goto err; // local dims (can be none)
 		if (block(func.get("block")) <= 0) goto err; // main function block (can be empty)
-		if (!expect("end") || !expect("function") || !(eoltok() || eoftok())) goto err; // function end
+		if (!expect("end") || !expect("function") || !lineend()) goto err; // function end
 		return 1;
 		err:
 		doerr("function");
@@ -74,7 +74,7 @@ struct Parser : ParserExpression {
 		}
 		else
 			dim.get("expr").pushs("0"); // assign default value (0)
-		if (!eoltok()) goto err; // end of line
+		if (!lineend()) goto err; // end of line
 		return 1;
 		err:
 		doerr("dim");
@@ -100,9 +100,9 @@ struct Parser : ParserExpression {
 			{"block"}
 		}});
 		auto& ex = cmd.get("expr").pushs("??");
-		if (expr(ex) < 1 || !expect("then") || !eoltok()) goto err;
+		if (expr(ex) < 1 || !expect("then") || !lineend()) goto err;
 		if (block(cmd.get("block")) < 1) goto err;
-		if (!expect("end") || !expect("if") || !eoltok()) goto err;
+		if (!expect("end") || !expect("if") || !lineend()) goto err;
 		return 1;
 		err:
 		doerr("if");
@@ -113,8 +113,8 @@ struct Parser : ParserExpression {
 		if (!expect("return")) return 0;
 		Node& cmd = blk.pushs("return");
 		auto& ex = cmd.pushs("expr").pushs("0"); // default return
-		if (eoltok()) return 1;
-		if (expr(ex) < 1 || !eoltok()) goto err;
+		if (lineend()) return 1;
+		if (expr(ex) < 1 || !lineend()) goto err;
 		return 1;
 		err:
 		return doerr("return"), -1;

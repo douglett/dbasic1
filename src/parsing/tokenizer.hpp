@@ -24,18 +24,35 @@ struct Tokenizer : ParseTools {
 		return 0;
 	}
 
+	void pushs(std::string& s, int lno) {
+		if (s.length())
+			tokens.push_back({ s, lno }), s = "";
+	}
+
 	int parse() {
 		int lno = 0;
 		for (const auto& line : lines) {
 			lno++;
 			std::string s;
-			for (const auto& c : line) {
-				if (iswhitespace(c) || isspecial(c)) {
-					if (s.length()) tokens.push_back({ s, lno }), s = "";
-					if (isspecial(c)) tokens.push_back({ std::string()+c, lno });
-				}
-				else
+			for (unsigned int i = 0; i < line.length(); i++) {
+				auto c = line[i];
+				// comments
+				if (c == '\'') {
+					pushs(s, lno);
+					tokens.push_back({ line.substr(i), lno });
+					break;
+				// word breaks
+				} else if (iswhitespace(c)) {
+					pushs(s, lno);
+				// control characters
+				} else if (isspecial(c)) {
+					pushs(s, lno);
+					if (isspecial(c)) 
+						tokens.push_back({ std::string()+c, lno });
+				// add to word
+				} else {
 					s += c;
+				}
 			}
 			if (s.length()) tokens.push_back({ s, lno });
 			tokens.push_back({ "[EOL]", lno });

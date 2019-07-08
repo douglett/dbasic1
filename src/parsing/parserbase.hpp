@@ -36,6 +36,16 @@ struct ParserBase : ParseTools {
 			return ++pos, 1;
 		return 0;
 	}
+	int linecomment() {
+		// if (peek().val.substr(0, 2) == "//")
+		if (peek().val[0] == '\'')
+			return ++pos, 1;
+		return 0;
+	}
+	int lineend() {
+		linecomment();
+		return eoltok() || eoftok();
+	}
 	int identifier() {
 		if (isidentifier(peek().val))
 			return ++pos, 1;
