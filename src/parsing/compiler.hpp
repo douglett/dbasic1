@@ -40,6 +40,7 @@ struct Compiler : ParseTools {
 		}};
 		locals(func.get("locals"), fn); // local variables
 		fn.push( block(func.get("block")) ); // function block
+//		fn.append( block(func.get("block")).list ); // function block
 		fn.push({"()", { {"i32.const 0"} }}); // return value
 		return fn;
 	}
@@ -78,6 +79,7 @@ struct Compiler : ParseTools {
 
 	Node cmdwhile(const Node& cmd) {
 		std::string lmain = "$loop$0", lcontinue = lmain+"$continue";
+
 		return {"()", {
 			{"block "+lmain},
 			{"()", {
@@ -94,6 +96,20 @@ struct Compiler : ParseTools {
 				{"(br "+lcontinue+")"} // do loop
 			}}
 		}};
+
+//		Node whl = {"()", { {"block "+lmain} }};
+//		auto& lp = whl.push({"()", { {"loop "+lcontinue} }});
+//		lp.push({"()", {
+//			{"br_if "+lmain},
+//			{"()", {
+//				{"i32.ne"},
+//				{"(i32.const 1)"}, // negate expression
+//				expr( cmd.get("expr").get(0) ) // while-true expression
+//			}}
+//		}});
+//		lp.append( block( cmd.get("block") ).list ); // main block
+//		lp.push({"(br "+lcontinue+")"}); // do loop
+//		return whl;
 	}
 
 	Node cmdreturn(const Node& cmd) {
