@@ -12,7 +12,7 @@ function f()
 		return 10
 	end while
 
-	for i = 1 to 20
+	for j = 1 to 20
 		return 10
-	next i
+	next j
 end function

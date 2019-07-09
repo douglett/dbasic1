@@ -40,8 +40,7 @@ struct Parser : ParserExpression {
 		if (!expect("end") || !expect("function") || !lineend()) goto err; // function end
 		return 1;
 		err:
-		doerr("function");
-		return -1;
+		return doerr("function");
 	}
 
 	int locals(Node& locals) {
@@ -52,8 +51,7 @@ struct Parser : ParserExpression {
 		}
 		return !!locals.list.size(); // 1 or 0
 		err:
-		doerr("function-locals");
-		return -1;
+		return doerr("function-locals");
 	}
 
 	int dim(Node& blk) {
@@ -73,22 +71,20 @@ struct Parser : ParserExpression {
 		if (!lineend()) goto err; // end of line
 		return 1;
 		err:
-		doerr("dim");
-		return -1;
+		return doerr("dim");
 	}
 
 	int block(Node& blk) {
 		while (peek().val != "end" && peek().val != "next")
 			if      (lineend()) ;
-			else if (cmdif(blk)) ;
-			else if (cmdwhile(blk)) ;
-			else if (cmdfor(blk)) ;
-			else if (cmdret(blk)) ;
+			else if (cmdif(blk) == 1) ;
+			else if (cmdwhile(blk) == 1) ;
+			else if (cmdfor(blk) == 1) ;
+			else if (cmdret(blk) == 1) ;
 			else    goto err; // unexpected in block
 		return 1;
 		err:
-		doerr("block");
-		return -1;
+		return doerr("block");
 	}
 
 	int cmdif(Node& blk) {
@@ -103,8 +99,7 @@ struct Parser : ParserExpression {
 		if (!expect("end") || !expect("if") || !lineend()) goto err;
 		return 1;
 		err:
-		doerr("if");
-		return -1;
+		return doerr("if");
 	}
 
 	int cmdwhile(Node& blk) {
@@ -151,7 +146,7 @@ struct Parser : ParserExpression {
 		// contents
 		if (block( cmd.get("block") ) < 1) goto err;
 		// next - make sure identifiers match
-		if (!expect("next") || !identifier() || peek(-1).val != id) goto err;
+		if (!expect("next") || peek().val != id || !identifier()) goto err;
 		return 1;
 		err:
 		return doerr("for");

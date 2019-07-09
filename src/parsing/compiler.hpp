@@ -107,6 +107,7 @@ struct Compiler : ParseTools {
 		std::string lmain = "$loop$0",
 			lcont = lmain+"$continue";
 		auto id = "$"+cmd.get("id").get(0).val;
+		int step = std::stod( cmd.get("step").get(0).val );
 		// outer loop
 		Node nfor = {"()", {
 			{"block "+lmain},
@@ -121,19 +122,19 @@ struct Compiler : ParseTools {
 		}};
 		// inner-loop
 		Node& inner = nfor.get("()", 1);
-		// loop contents
-		block_inline( cmd.get("block"), inner );
-		// step
-		inner.push(var_increment( id, cmd.get("step").get(0).val ));
-		// break condition - WARNING nieve
+		// break condition
 		inner.push({"()", {
 			{"br_if "+lmain},
 			{"()", {
-				{"i32.eq"},
+				{ step < 0 ? "i32.lt" : "i32.gt" },
 				var_local( id ),
 				var_const( cmd.get("end").get(0).val )
 			}}
 		}});
+		// loop contents
+		block_inline( cmd.get("block"), inner );
+		// step
+		inner.push(var_increment( id, cmd.get("step").get(0).val ));
 		// do loop
 		inner.push({"()", { {"br"}, {lcont} }});
 		return nfor;
