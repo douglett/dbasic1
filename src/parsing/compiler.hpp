@@ -82,13 +82,14 @@ struct Compiler : ParseTools {
 	}
 
 	Node cmdwhile(const Node& cmd) {
-		std::string lmain = "$loop$0", lcontinue = lmain+"$continue";
+		std::string lmain = "$loop$0",
+			lcont = lmain+"$continue";
 		// nested loop
 		Node nwhile = {"()", {
 			{"block "+lmain}
 		}};
 		Node& inner = nwhile.push({"()", {
-			{"loop "+lcontinue}
+			{"loop "+lcont}
 		}});
 		// add break condition to inner loop
 		inner.push({"()", {
@@ -98,23 +99,24 @@ struct Compiler : ParseTools {
 		// loop contents
 		block_inline( cmd.get("block"), inner );
 		// continue loop
-		inner.pushs("(br "+lcontinue+")");
+		inner.pushs("(br "+lcont+")");
 		return nwhile;
 	}
 
 	Node cmdfor(const Node& cmd) {
-		std::string labelout = "$loop$1", labelin = labelout+"$continue";
+		std::string lmain = "$loop$0",
+			lcont = lmain+"$continue";
 		auto id = "$"+cmd.get("id").get(0).val;
 		// outer loop
 		Node nfor = {"()", {
-			{"block "+labelout},
+			{"block "+lmain},
 			{"()", { // start values
 				{"set_local"}, 
 				{id}, 
 				{"(i32.const "+cmd.get("start").get(0).val+")"}
 			}},
 			{"()", { // inner-loop
-				{"loop "+labelin}
+				{"loop "+lcont}
 			}}
 		}};
 		// inner-loop
@@ -125,7 +127,7 @@ struct Compiler : ParseTools {
 		inner.push(var_increment( id, cmd.get("step").get(0).val ));
 		// break condition - WARNING nieve
 		inner.push({"()", {
-			{"br_if "+labelout},
+			{"br_if "+lmain},
 			{"()", {
 				{"i32.eq"},
 				{"(get_local "+id+")"},
@@ -133,7 +135,7 @@ struct Compiler : ParseTools {
 			}}
 		}});
 		// do loop
-		inner.pushs("(br "+labelin+")");
+		inner.pushs("(br "+lcont+")");
 		return nfor;
 	}
 
