@@ -108,43 +108,28 @@ struct Compiler : ParseTools {
 		// outer loop
 		Node nfor = {"()", {
 			{"block "+labelout},
-			// start values
-			{"()", {
+			{"()", { // start values
 				{"set_local"}, 
 				{id}, 
 				{"(i32.const "+cmd.get("start").get(0).val+")"}
+			}},
+			{"()", { // inner-loop
+				{"loop "+labelin}
 			}}
 		}};
 		// inner-loop
-		Node& inner = nfor.push({"()", {
-			{"loop "+labelin},
-			// exit condition - TODO
-			{"()", {
-				{"br_if "+labelout},
-				{"()", {
-					{"i32.or"},
-					{"()", {
-						{"i32.lt_s"},
-						{"(get_local "+id+")"},
-						{"(i32.const "+cmd.get("start").get(0).val+")"},
-					}},
-					{"()", {
-						{"i32.gt_s"},
-						{"(get_local "+id+")"},
-						{"(i32.const "+cmd.get("end").get(0).val+")"},
-					}}
-				}}
-			}}
-		}});
+		Node& inner = nfor.get("()", 1);
 		// loop contents
 		block_inline( cmd.get("block"), inner );
 		// step
+		inner.push(var_increment( id, cmd.get("step").get(0).val ));
+		// break condition - WARNING nieve
 		inner.push({"()", {
-			{"set_local "+id},
+			{"br_if "+labelout},
 			{"()", {
-				{"i32.add"},
+				{"i32.eq"},
 				{"(get_local "+id+")"},
-				{"(i32.const "+cmd.get("step").get(0).val+")"}
+				{"(i32.const "+cmd.get("end").get(0).val+")"}
 			}}
 		}});
 		// do loop
@@ -177,12 +162,26 @@ struct Compiler : ParseTools {
 		return {"()", { {op}, expr(ex.get(0)), expr(ex.get(1)) }};
 	};
 
+	/** helpers **/
+
 	// negate expression
 	Node expr_negate(const Node& ex) {
 		return {"()", {
 			{"i32.eq"},
 			{"(i32.const 0)"},
 			expr( ex ) // true expression
+		}};
+	}
+
+	// plus-equals
+	Node var_increment(const std::string& id, const std::string num="1") {
+		return {"()", {
+			{"set_local "+id},
+			{"()", {
+				{"i32.add"},
+				{"(get_local "+id+")"},
+				{"(i32.const "+num+")"}
+			}}
 		}};
 	}
 
