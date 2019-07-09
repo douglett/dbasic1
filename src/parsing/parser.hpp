@@ -78,10 +78,11 @@ struct Parser : ParserExpression {
 	}
 
 	int block(Node& blk) {
-		while (peek().val != "end")
+		while (peek().val != "end" && peek().val != "next")
 			if      (lineend()) ;
 			else if (cmdif(blk)) ;
 			else if (cmdwhile(blk)) ;
+			else if (cmdfor(blk)) ;
 			else if (cmdret(blk)) ;
 			else    goto err; // unexpected in block
 		return 1;
@@ -120,6 +121,40 @@ struct Parser : ParserExpression {
 			&& expectm({ "end", "while" }) 
 			&& lineend();
 		return ok ? 1 : doerr("if");
+	}
+
+	int cmdfor(Node& blk) {
+		if (!expect("for")) return 0;
+		Node& cmd = blk.push({"for", {
+			{"id"},
+			{"start"},
+			{"end"},
+			{"step"},
+			{"block"}
+		}});
+		std::string id;
+		// for conditions
+		if (!identifier()) goto err;
+		id = peek(-1).val;
+		cmd.get("id").pushs(id);
+		if (!expect("=") || !number()) goto err;
+		cmd.get("start").pushs(peek(-1).val);
+		if (!expect("to") || !number()) goto err;
+		cmd.get("end").pushs(peek(-1).val);
+		// optional step
+		if (expect("step")) {
+			if (!number()) goto err;
+			cmd.get("step").pushs(peek(-1).val);
+		} else {
+			cmd.get("step").pushs("1"); // default: add 1 per iteration
+		}
+		// contents
+		if (block( cmd.get("block") ) < 1) goto err;
+		// next - make sure identifiers match
+		if (!expect("next") || !identifier() || peek(-1).val != id) goto err;
+		return 1;
+		err:
+		return doerr("for");
 	}
 
 	int cmdret(Node& blk) {

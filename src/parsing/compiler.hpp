@@ -68,6 +68,7 @@ struct Compiler : ParseTools {
 			if      (false) ;
 			else if (line.val == "if"    ) b.push( cmdif(line) );
 			else if (line.val == "while" ) b.push( cmdwhile(line) );
+			else if (line.val == "for"   ) b.push( cmdfor(line) );
 			else if (line.val == "return") b.push( cmdreturn(line) );
 			else    error("unexpected in block", line);
 	}
@@ -83,21 +84,72 @@ struct Compiler : ParseTools {
 	Node cmdwhile(const Node& cmd) {
 		std::string lmain = "$loop$0", lcontinue = lmain+"$continue";
 		// nested loop
-		Node whl = {"()", {
-			{"block "+lmain},
-			{"()", {
-				{"loop "+lcontinue}
-			}}
+		Node nwhile = {"()", {
+			{"block "+lmain}
 		}};
+		Node& inner = nwhile.push({"()", {
+			{"loop "+lcontinue}
+		}});
 		// add break condition to inner loop
-		whl.get("()").push({"()", {
+		inner.push({"()", {
 			{"br_if "+lmain},
 			expr_negate( cmd.get("expr").get(0) )
 		}});
 		// loop contents
-		block_inline( cmd.get("block"), whl.get("()") ); // main block
-		whl.get("()").pushs("(br "+lcontinue+")"); // continue loop
-		return whl;
+		block_inline( cmd.get("block"), inner );
+		// continue loop
+		inner.pushs("(br "+lcontinue+")");
+		return nwhile;
+	}
+
+	Node cmdfor(const Node& cmd) {
+		std::string labelout = "$loop$1", labelin = labelout+"$continue";
+		auto id = "$"+cmd.get("id").get(0).val;
+		// outer loop
+		Node nfor = {"()", {
+			{"block "+labelout},
+			// start values
+			{"()", {
+				{"set_local"}, 
+				{id}, 
+				{"(i32.const "+cmd.get("start").get(0).val+")"}
+			}}
+		}};
+		// inner-loop
+		Node& inner = nfor.push({"()", {
+			{"loop "+labelin},
+			// exit condition - TODO
+			{"()", {
+				{"br_if "+labelout},
+				{"()", {
+					{"i32.or"},
+					{"()", {
+						{"i32.lt_s"},
+						{"(get_local "+id+")"},
+						{"(i32.const "+cmd.get("start").get(0).val+")"},
+					}},
+					{"()", {
+						{"i32.gt_s"},
+						{"(get_local "+id+")"},
+						{"(i32.const "+cmd.get("end").get(0).val+")"},
+					}}
+				}}
+			}}
+		}});
+		// loop contents
+		block_inline( cmd.get("block"), inner );
+		// step
+		inner.push({"()", {
+			{"set_local "+id},
+			{"()", {
+				{"i32.add"},
+				{"(get_local "+id+")"},
+				{"(i32.const "+cmd.get("step").get(0).val+")"}
+			}}
+		}});
+		// do loop
+		inner.pushs("(br "+labelin+")");
+		return nfor;
 	}
 
 	Node cmdreturn(const Node& cmd) {
