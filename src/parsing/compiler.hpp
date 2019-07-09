@@ -38,14 +38,13 @@ struct Compiler : ParseTools {
 			{"(export \""+name+"\")"},
 			{"(result i32)"}
 		}};
-		locals(func.get("locals"), fn); // local variables
-		fn.push( block(func.get("block")) ); // function block
-//		fn.append( block(func.get("block")).list ); // function block
+		locals_inline( func.get("locals"), fn ); // append local variables
+		block_inline( func.get("block"), fn ); // append function block
 		fn.push({"()", { {"i32.const 0"} }}); // return value
 		return fn;
 	}
 
-	void locals(const Node& locals, Node& fn) {
+	void locals_inline(const Node& locals, Node& fn) {
 		Node local_def, local_set;
 		for (auto& l : locals.list) {
 			auto& name = l.get("name").get(0).val; // local base name
@@ -58,15 +57,19 @@ struct Compiler : ParseTools {
 		fn.append(local_set.list);
 	}
 
-	Node block(const Node& block) {
+	Node block(const Node& blk) {
 		Node b = {"()", { {"block"} }};
-		for (auto& line : block.list)
+		block_inline(blk, b);
+		return b;
+	}
+
+	void block_inline(const Node& blk, Node& b) {
+		for (auto& line : blk.list)
 			if      (false) ;
 			else if (line.val == "if"    ) b.push( cmdif(line) );
 			else if (line.val == "while" ) b.push( cmdwhile(line) );
 			else if (line.val == "return") b.push( cmdreturn(line) );
 			else    error("unexpected in block", line);
-		return b;
 	}
 
 	Node cmdif(const Node& cmd) {
@@ -79,37 +82,22 @@ struct Compiler : ParseTools {
 
 	Node cmdwhile(const Node& cmd) {
 		std::string lmain = "$loop$0", lcontinue = lmain+"$continue";
-
-		return {"()", {
+		// nested loop
+		Node whl = {"()", {
 			{"block "+lmain},
 			{"()", {
-				{"loop "+lcontinue},
-				{"()", {
-					{"br_if "+lmain},
-					{"()", {
-						{"i32.ne"},
-						{"(i32.const 1)"}, // negate expression
-						expr( cmd.get("expr").get(0) ) // while-true expression
-					}}
-				}},
-				block( cmd.get("block") ), // main block
-				{"(br "+lcontinue+")"} // do loop
+				{"loop "+lcontinue}
 			}}
 		}};
-
-//		Node whl = {"()", { {"block "+lmain} }};
-//		auto& lp = whl.push({"()", { {"loop "+lcontinue} }});
-//		lp.push({"()", {
-//			{"br_if "+lmain},
-//			{"()", {
-//				{"i32.ne"},
-//				{"(i32.const 1)"}, // negate expression
-//				expr( cmd.get("expr").get(0) ) // while-true expression
-//			}}
-//		}});
-//		lp.append( block( cmd.get("block") ).list ); // main block
-//		lp.push({"(br "+lcontinue+")"}); // do loop
-//		return whl;
+		// add break condition to inner loop
+		whl.get("()").push({"()", {
+			{"br_if "+lmain},
+			expr_negate( cmd.get("expr").get(0) )
+		}});
+		// loop contents
+		block_inline( cmd.get("block"), whl.get("()") ); // main block
+		whl.get("()").pushs("(br "+lcontinue+")"); // continue loop
+		return whl;
 	}
 
 	Node cmdreturn(const Node& cmd) {
@@ -137,14 +125,19 @@ struct Compiler : ParseTools {
 		return {"()", { {op}, expr(ex.get(0)), expr(ex.get(1)) }};
 	};
 
-//	int in_list(const std::vector<std::string>>& list, const std::string& val) {
-//		for (auto& l : list)
-//			if (l == val) return 1;
-//		return 0;
-//	}
+	// negate expression
+	Node expr_negate(const Node& ex) {
+		return {"()", {
+			{"i32.eq"},
+			{"(i32.const 0)"},
+			expr( ex ) // true expression
+		}};
+	}
 
-//	Node dim(const Node& d) {
-//		auto& name = d.get("name").get(0).val;
-//		return {"()", { {"local $"+name+" i32"} }};
-//	}
+
+	// int in_list(const std::vector<std::string>>& list, const std::string& val) {
+	// 	for (auto& l : list)
+	// 		if (l == val) return 1;
+	// 	return 0;
+	// }
 };
