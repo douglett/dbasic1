@@ -99,7 +99,7 @@ struct Compiler : ParseTools {
 		// loop contents
 		block_inline( cmd.get("block"), inner );
 		// continue loop
-		inner.pushs("(br "+lcont+")");
+		inner.push({"()", { {"br"}, {lcont} }});
 		return nwhile;
 	}
 
@@ -113,7 +113,7 @@ struct Compiler : ParseTools {
 			{"()", { // start values
 				{"set_local"}, 
 				{id}, 
-				{"(i32.const "+cmd.get("start").get(0).val+")"}
+				var_const( cmd.get("start").get(0).val )
 			}},
 			{"()", { // inner-loop
 				{"loop "+lcont}
@@ -130,12 +130,12 @@ struct Compiler : ParseTools {
 			{"br_if "+lmain},
 			{"()", {
 				{"i32.eq"},
-				{"(get_local "+id+")"},
-				{"(i32.const "+cmd.get("end").get(0).val+")"}
+				var_local( id ),
+				var_const( cmd.get("end").get(0).val )
 			}}
 		}});
 		// do loop
-		inner.pushs("(br "+lcont+")");
+		inner.push({"()", { {"br"}, {lcont} }});
 		return nfor;
 	}
 
@@ -148,8 +148,8 @@ struct Compiler : ParseTools {
 
 	Node expr(const Node& ex) {
 		auto& val = ex.val;
-		if (isnumber(val)) return { "(i32.const "+val+")" };
-		if (isidentifier(val)) return { "(get_local $"+val+")" };
+		if (isnumber(val)) return var_const(val);
+		if (isidentifier(val)) return var_local(val);
 		std::string op;
 		if      (val == "==") op = "i32.eq";
 		else if (val == ">" ) op = "i32.gt_s";
@@ -165,6 +165,14 @@ struct Compiler : ParseTools {
 	};
 
 	/** helpers **/
+
+	// basic lists
+	Node var_const(const std::string& var) {
+		return {"()", { {"i32.const"}, {var} }};
+	}
+	Node var_local(const std::string& var) {
+		return {"()", { {"get_local"}, {var} }};
+	}
 
 	// negate expression
 	Node expr_negate(const Node& ex) {
