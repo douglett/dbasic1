@@ -11,6 +11,9 @@ struct ParserBase : ParseTools {
 	const Token& peek(int offset=0) {
 		return tok.tokens.at(pos + offset);
 	}
+	const std::string& peeks(int offset=0) {
+		return peek(offset).val;
+	}
 
 	// parsing basic tokens
 	int expect(const std::string& val) {

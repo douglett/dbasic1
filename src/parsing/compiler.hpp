@@ -49,7 +49,7 @@ struct Compiler : ParseTools {
 		for (auto& l : locals.list) {
 			auto& name = l.get("name").get(0).val; // local base name
 			local_def.pushs("()").pushs("local $"+name+" i32"); // predefine
-			auto ex = expr( l.get("expr").get(0) ); // parse defining expression
+			auto ex = expr( l.get("expr") ); // parse defining expression
 			local_set.push({"()", { {"set_local $"+name}, ex }}); // set assigning expression to var
 		}
 		// add locals to function
@@ -70,13 +70,14 @@ struct Compiler : ParseTools {
 			else if (line.val == "while" ) b.push( cmdwhile(line) );
 			else if (line.val == "for"   ) b.push( cmdfor(line) );
 			else if (line.val == "return") b.push( cmdreturn(line) );
+			else if (line.val == "assign") b.push( cmdassign(line) );
 			else    error("unexpected in block", line);
 	}
 
 	Node cmdif(const Node& cmd) {
 		return {"()", {
 			{"if"},
-			expr(cmd.get("expr").get(0)),
+			expr(cmd.get("expr")),
 			block(cmd.get("block"))
 		}};
 	}
@@ -94,7 +95,7 @@ struct Compiler : ParseTools {
 		// add break condition to inner loop
 		inner.push({"()", {
 			{"br_if "+lmain},
-			expr_negate( cmd.get("expr").get(0) )
+			expr_negate(cmd.get("expr"))
 		}});
 		// loop contents
 		block_inline( cmd.get("block"), inner );
@@ -112,8 +113,8 @@ struct Compiler : ParseTools {
 		Node nfor = {"()", {
 			{"block "+lmain},
 			{"()", { // start values
-				{"set_local"}, 
-				{id}, 
+				{"set_local"},
+				{id},
 				var_const( cmd.get("start").get(0).val )
 			}},
 			{"()", { // inner-loop
@@ -143,11 +144,21 @@ struct Compiler : ParseTools {
 	Node cmdreturn(const Node& cmd) {
 		return {"()", {
 			{"return"},
-			expr(cmd.get("expr").get(0))
+			expr(cmd.get("expr"))
+		}};
+	}
+
+	Node cmdassign(const Node& cmd) {
+		return {"()", {
+			{"set_local " + cmd.get("id").get(0).val},
+			expr(cmd.get("expr"))
 		}};
 	}
 
 	Node expr(const Node& ex) {
+		return expr_inner(ex.get(0));
+	}
+	Node expr_inner(const Node& ex) {
 		auto& val = ex.val;
 		if (isnumber(val)) return var_const(val);
 		if (isidentifier(val)) return var_local(val);
@@ -162,7 +173,7 @@ struct Compiler : ParseTools {
 		else if (val == "*" ) op = "i32.mul";
 		else if (val == "/" ) op = "i32.div";
 		else    error("unexpected in expression", ex);
-		return {"()", { {op}, expr(ex.get(0)), expr(ex.get(1)) }};
+		return {"()", { {op}, expr_inner(ex.get(0)), expr_inner(ex.get(1)) }};
 	};
 
 	/** helpers **/

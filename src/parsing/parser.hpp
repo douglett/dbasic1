@@ -8,8 +8,8 @@ struct Parser : ParserExpression {
 	Parser(const Tokenizer& t) { tok = t; }
 
 	int parse() {
-		// for (auto t : tok.tokens)
-		// 	printf("  [%s]\n", t.val.c_str());
+		for (auto t : tok.tokens)
+			printf("  [%s]\n", t.val.c_str());
 		pos = 0;
 		int result = prog(ast);
 		printf("parse result: %d\n", result);
@@ -33,7 +33,7 @@ struct Parser : ParserExpression {
 			{"block"}
 		}});
 		if (identifier() <= 0) goto err; // function name
-		func.get("name").pushs(peek(-1).val); // save function name
+		func.get("name").pushs(peeks(-1)); // save function name
 		if (!expect("(") || !expect(")") || !lineend()) goto err; // args (TEMP)
 		if (locals(func.get("locals")) < 0) goto err; // local dims (can be none)
 		if (block(func.get("block")) <= 0) goto err; // main function block (can be empty)
@@ -61,7 +61,7 @@ struct Parser : ParserExpression {
 			{"expr"}
 		}});
 		if (!identifier()) goto err; // dim name
-		dim.get("name").pushs(peek(-1).val); // save name
+		dim.get("name").pushs(peeks(-1)); // save name
 		// initial value expression
 		if (expect("=")) {
 			if (expr( dim.get("expr").pushs("??") ) < 1) goto err;
@@ -75,12 +75,13 @@ struct Parser : ParserExpression {
 	}
 
 	int block(Node& blk) {
-		while (peek().val != "end" && peek().val != "next")
+		while (!(peeks() == "end" || peeks() == "next"))
 			if      (lineend()) ;
 			else if (cmdif(blk) == 1) ;
 			else if (cmdwhile(blk) == 1) ;
 			else if (cmdfor(blk) == 1) ;
 			else if (cmdret(blk) == 1) ;
+			else if (cmdassign(blk) == 1) ;
 			else    goto err; // unexpected in block
 		return 1;
 		err:
@@ -130,23 +131,23 @@ struct Parser : ParserExpression {
 		std::string id;
 		// for conditions
 		if (!identifier()) goto err;
-		id = peek(-1).val;
+		id = peeks(-1);
 		cmd.get("id").pushs(id);
 		if (!expect("=") || !number()) goto err;
-		cmd.get("start").pushs(peek(-1).val);
+		cmd.get("start").pushs(peeks(-1));
 		if (!expect("to") || !number()) goto err;
-		cmd.get("end").pushs(peek(-1).val);
+		cmd.get("end").pushs(peeks(-1));
 		// optional step
 		if (expect("step")) {
 			if (!number()) goto err;
-			cmd.get("step").pushs(peek(-1).val);
+			cmd.get("step").pushs(peeks(-1));
 		} else {
 			cmd.get("step").pushs("1"); // default: add 1 per iteration
 		}
 		// contents
 		if (block( cmd.get("block") ) < 1) goto err;
 		// next - make sure identifiers match
-		if (!expect("next") || peek().val != id || !identifier()) goto err;
+		if (!expect("next") || peeks() != id || !identifier()) goto err;
 		return 1;
 		err:
 		return doerr("for");
@@ -161,5 +162,55 @@ struct Parser : ParserExpression {
 		return 1;
 		err:
 		return doerr("return"), -1;
+	}
+
+	int cmdassign_(Node& blk) {
+		int p = pos;
+		if (!identifier() || !expect("=")) return pos = p, 0;
+		Node& cmd = blk.push({"assign", {
+			{"id"},
+			{"expr"}
+		}});
+		cmd.get("id").pushs(peeks(-2));
+		if (expr( cmd.get("expr").pushs("??") ) < 1) goto err;
+		return 1;
+		err:
+		return doerr("assign");
+	}
+
+	int cmdassign(Node& blk) {
+		// int p = pos;
+		if (!identifier()) return 0;
+		auto& id = peeks(-1);
+		Node& cmd = blk.push({"assign", {
+			{"id", { {id} }},
+			{"expr"}
+		}});
+		Node& ex = cmd.get("expr").pushs("??");
+		// normal set
+		if (expect("=")) {
+		 	if (expr(ex) < 1) goto err;
+		}
+		// increment / decrement
+		else if (
+				acceptm({"+", "+"})
+				|| acceptm({"-", "-"}) ) {
+			ex = {peeks(-1), { {id}, {"1"} }};
+		}
+		// modify-equals
+		else if (
+				acceptm({"+", "="})
+				|| acceptm({"-", "="})
+				|| acceptm({"-", "="})
+				|| acceptm({"-", "="}) ) {
+			ex = {peeks(-2), { {id}, {"??"} }};
+			if (expr(ex.get(1)) < 1) goto err;
+		}
+		// unknown
+		else goto err;
+		if (!lineend()) goto err; // eol
+		return 1;
+		err:
+		return doerr("assign");
 	}
 };

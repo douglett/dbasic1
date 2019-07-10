@@ -8,6 +8,12 @@ function f()
 		end if
 	end if
 
+	a = a + 1
+	a=1
+	a++
+	a--
+	a += 20
+
 	while a > 0 do
 		return 10
 	end while
