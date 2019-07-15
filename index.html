@@ -166,8 +166,8 @@ end function
 		(local $a i32)
 		(local.set $i (i32.const 0))
 		(local.set $a (i32.const 0))
-		(local.set $i (i32.const 1))
 		(block $loop0
+			(local.set $i (i32.const 1))
 			(loop $loop0_continue
 				(br_if $loop0
 					(i32.gt (get_local $i) (i32.const 10)))
