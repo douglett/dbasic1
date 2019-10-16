@@ -107,14 +107,14 @@ struct Compiler : ParseTools {
 	Node cmdfor(const Node& cmd) {
 		std::string lmain = "$loop$0",
 			lcont = lmain+"$continue";
-		auto id = "$"+cmd.get("id").get(0).val;
+		auto id = cmd.get("id").get(0).val;
 		int step = std::stod( cmd.get("step").get(0).val );
 		// outer loop
 		Node nfor = {"()", {
 			{"block "+lmain},
 			{"()", { // start values
 				{"set_local"},
-				{id},
+				{"$"+id},
 				var_const( cmd.get("start").get(0).val )
 			}},
 			{"()", { // inner-loop
@@ -127,7 +127,7 @@ struct Compiler : ParseTools {
 		inner.push({"()", {
 			{"br_if "+lmain},
 			{"()", {
-				{ step < 0 ? "i32.lt" : "i32.gt" },
+				{ step < 0 ? "i32.lt_s" : "i32.gt_s" },
 				var_local( id ),
 				var_const( cmd.get("end").get(0).val )
 			}}
@@ -149,8 +149,9 @@ struct Compiler : ParseTools {
 	}
 
 	Node cmdassign(const Node& cmd) {
+		auto id = cmd.get("id").get(0).val;
 		return {"()", {
-			{"set_local " + cmd.get("id").get(0).val},
+			{"set_local $"+id},
 			expr(cmd.get("expr"))
 		}};
 	}
@@ -182,8 +183,8 @@ struct Compiler : ParseTools {
 	Node var_const(const std::string& var) {
 		return {"()", { {"i32.const"}, {var} }};
 	}
-	Node var_local(const std::string& var) {
-		return {"()", { {"get_local"}, {var} }};
+	Node var_local(const std::string& id) {
+		return {"()", { {"get_local"}, {"$"+id} }};
 	}
 
 	// negate expression
@@ -198,10 +199,10 @@ struct Compiler : ParseTools {
 	// plus-equals
 	Node var_increment(const std::string& id, const std::string num="1") {
 		return {"()", {
-			{"set_local "+id},
+			{"set_local $"+id},
 			{"()", {
 				{"i32.add"},
-				{"(get_local "+id+")"},
+				{"(get_local $"+id+")"},
 				{"(i32.const "+num+")"}
 			}}
 		}};

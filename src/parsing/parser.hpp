@@ -164,20 +164,6 @@ struct Parser : ParserExpression {
 		return doerr("return"), -1;
 	}
 
-	int cmdassign_(Node& blk) {
-		int p = pos;
-		if (!identifier() || !expect("=")) return pos = p, 0;
-		Node& cmd = blk.push({"assign", {
-			{"id"},
-			{"expr"}
-		}});
-		cmd.get("id").pushs(peeks(-2));
-		if (expr( cmd.get("expr").pushs("??") ) < 1) goto err;
-		return 1;
-		err:
-		return doerr("assign");
-	}
-
 	int cmdassign(Node& blk) {
 		// int p = pos;
 		if (!identifier()) return 0;
