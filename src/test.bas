@@ -1,3 +1,5 @@
+'dim b = 1
+
 'a function
 function f()
 	dim a = 10 + 10 * 5 - 59 'blah

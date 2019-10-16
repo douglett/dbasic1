@@ -61,4 +61,11 @@ struct Tokenizer : ParseTools {
 		tokens.push_back({ "[EOF]", lno });
 		return 0;
 	}
+
+	std::string show() {
+		std::string s;
+		for (const auto& t : tokens)
+			s += "\n  [" + t.val + "]";
+		return s;
+	}
 };

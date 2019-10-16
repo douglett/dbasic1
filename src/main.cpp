@@ -10,13 +10,16 @@ int main() {
 	Tokenizer tok;
 	if (tok.load("test.bas")) return 1;
 	if (tok.parse()) return 1;
-	printf("lines : %d\n", int(tok.lines.size()));
-	printf("tokens: %d\n", int(tok.tokens.size()));
+	printf("  lines : %d\n", int(tok.lines.size()));
+	printf("  tokens: %d\n", int(tok.tokens.size()));
+	// std::cout << tok.show() << std::endl;
 
 	printf("::parse::\n");
 	Parser par(tok);
 	if (par.parse() < 1) return 1;
-	std::cout << par.ast.showtmp() << std::endl;
+	printf("  parse : ok\n");
+	// std::cout << par.ast.showtmp() << std::endl;
+	// return 0;
 
 	printf("::output::\n");
 	Compiler com;
