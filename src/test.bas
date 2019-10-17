@@ -2,7 +2,7 @@
 
 'a function
 function f()
-	dim a = 10 + 10 * 5 - 59 'blah
+	dim a = 10 + 10 * 5 - 58 'should be 1
 	dim i
 	dim j
 	if a >= 0 then
@@ -19,10 +19,19 @@ function f()
 	a += 20
 
 	while a > 0 do
-		return 10
+		return a
 	end while
 
 	for j = 1 to 20
-		return 10
+		return 20
 	next j
+end function
+
+
+function f2()
+	dim a = 10 + 10 * 5 - 59 'should be 1
+	dim i
+	dim j
+
+	return 20
 end function
