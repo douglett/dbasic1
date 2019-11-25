@@ -1,6 +1,7 @@
 #pragma once
 #include "parserbase.hpp"
 #include "parserexpression.hpp"
+#include "../helpers/ast.hpp"
 
 struct Parser : ParserExpression {
 	Node ast;
@@ -15,6 +16,7 @@ struct Parser : ParserExpression {
 	}
 
 	int prog(Node& ast) {
+		AST ast2 = { type: "prog" };
 		ast = {"prog"};
 		while (!eoftok())
 			if      (lineend() > 0) ;

@@ -1,5 +1,5 @@
 SRC = main.cpp
-HEAD = helpers/parsetools.hpp helpers/node.hpp \
+HEAD = helpers/parsetools.hpp helpers/node.hpp helpers/ast.hpp \
 	parsing/tokenizer.hpp \
 	parsing/parserbase.hpp parsing/parserexpression.hpp parsing/parser.hpp \
 	parsing/validate.hpp \
