@@ -21,21 +21,21 @@ int main() {
 	Parser par(tok);
 	if (par.parse() < 1) return 1;
 	printf("  parse : ok\n");
-	// std::cout << par.ast.showtmp() << std::endl;
-	// return 0;
+	std::cout << par.ast.show() << std::endl;
+	return 0;
 
 	// printf("::validate::\n");
 	// Validate val;
 	// val.variables(par.ast);
 	// return 0;
 
-	printf("::output::\n");
-	Compiler com;
-	if (com.build(par.ast)) return 1;
-	printf("  compile: ok\n");
-	// std::cout << com.output.showlisp() << std::endl;
-	std::fstream fs("test.wast", std::ios::out);
-	if (!fs.is_open()) return 1;
-	fs << com.output.showlisp();
-	printf("  output: ok\n");
+	// printf("::output::\n");
+	// Compiler com;
+	// if (com.build(par.ast)) return 1;
+	// printf("  compile: ok\n");
+	// // std::cout << com.output.showlisp() << std::endl;
+	// std::fstream fs("test.wast", std::ios::out);
+	// if (!fs.is_open()) return 1;
+	// fs << com.output.showlisp();
+	// printf("  output: ok\n");
 }

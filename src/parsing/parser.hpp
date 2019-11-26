@@ -1,10 +1,10 @@
 #pragma once
 #include "parserbase.hpp"
 #include "parserexpression.hpp"
-#include "../helpers/ast.hpp"
+#include "../helpers/astnode.hpp"
 
 struct Parser : ParserExpression {
-	Node ast;
+	ASTnode ast;
 
 	Parser(const Tokenizer& t) { tok = t; }
 
@@ -15,25 +15,35 @@ struct Parser : ParserExpression {
 		return result;
 	}
 
-	int prog(Node& ast) {
-		AST ast2 = { type: "prog" };
-		ast = {"prog"};
+	int prog(ASTnode& prog) {
+		prog = { type: "prog" };
+		// Node ast = {"prog"};
 		while (!eoftok())
 			if      (lineend() > 0) ;
-			else if (function(ast) > 0) ;
+			// globals here
+			else if (function(prog) > 0) ;
 			else    return doerr("root-scope");
 		return 1;
 	}
 
-	int function(Node& funclist) {
+	int function(ASTnode& prog) {
 		if (expect("function") <= 0) return 0;
+		
+		ASTnode& func2 = prog.push({ "function", "", {
+			{"name"},
+			{"locals"},
+			{"block"}
+		}});
+
+		Node funclist;
 		Node& func = funclist.push({"function", { // shouldn't reflow unless funclist is altered.
 			{"name"},
 			{"locals"},
 			{"block"}
 		}});
 		if (identifier() <= 0) goto err; // function name
-		func.get("name").pushs(peeks(-1)); // save function name
+		// func.get("name").pushs(peeks(-1)); // save function name
+		func2.value = func2.find("name").at(0)->value = peeks(-1);
 		if (!expect("(") || !expect(")") || !lineend()) goto err; // args (TEMP)
 		if (locals(func.get("locals")) < 0) goto err; // local dims (can be none)
 		if (block(func.get("block")) <= 0) goto err; // main function block (can be empty)
