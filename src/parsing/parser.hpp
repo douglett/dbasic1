@@ -28,8 +28,7 @@ struct Parser : ParserExpression {
 
 	int function(ASTnode& prog) {
 		if (expect("function") <= 0) return 0;
-		
-		ASTnode& func2 = prog.push({ "function", "", {
+		ASTnode& func2 = prog.push({ "function", "", { // build function container
 			{"name"},
 			{"locals"},
 			{"block"}
@@ -43,7 +42,7 @@ struct Parser : ParserExpression {
 		}});
 		if (identifier() <= 0) goto err; // function name
 		// func.get("name").pushs(peeks(-1)); // save function name
-		func2.value = func2.find("name").at(0)->value = peeks(-1);
+		func2.value = func2.find("name").at(0)->value = peeks(-1); // save function name
 		if (!expect("(") || !expect(")") || !lineend()) goto err; // args (TEMP)
 		if (locals(func.get("locals")) < 0) goto err; // local dims (can be none)
 		if (block(func.get("block")) <= 0) goto err; // main function block (can be empty)
