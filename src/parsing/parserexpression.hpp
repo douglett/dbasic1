@@ -1,6 +1,5 @@
 #pragma once
 #include "parserbase.hpp"
-#include <cassert>
 
 struct ParserExpression : ParserBase {
 
