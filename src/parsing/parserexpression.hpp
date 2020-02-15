@@ -36,17 +36,17 @@ struct ParserExpression : ParserBase {
 		return 1;
 	}
 
-	int expr_atom(Node& expr) {
-		if      (identifier()) expr = { peek(-1).val };
-		else if (number()) expr = { peek(-1).val };
-		else if (peek().val == "(") return expr_brackets(expr);
+	int expr_atom(Node& ex) {
+		if      (identifier()) ex = { peek(-1).val };
+		else if (number()) ex = { peek(-1).val };
+		else if (peek().val == "(") return expr_brackets(ex);
 		else    return 0;
 		return 1;
 	}
 
-	int expr_brackets(Node& expr) {
-		if (!expect("(") || this->expr(expr) < 1 || !expect(")")) return -1;
-		expr = {"()", { expr }};
+	int expr_brackets(Node& ex) {
+		if (!expect("(") || expr(ex) < 1 || !expect(")")) return -1;
+		ex = {"()", { ex }};
 		return 1;
 	}
 };
