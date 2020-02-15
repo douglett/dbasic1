@@ -182,7 +182,7 @@ struct Parser : ParserExpression {
 		if (!identifier()) return 0;
 		auto& id = peeks(-1);
 		ASTnode& cmd = blk.push({"assign", "", {
-			{"identifier"},
+			{"identifier", id},
 			{"expr"}
 		}});
 		Node ex = { "expr", { {"0"} } };
@@ -195,17 +195,29 @@ struct Parser : ParserExpression {
 		else if (
 				acceptm({"+", "+"})
 				|| acceptm({"-", "-"}) ) {
-			ex = {peeks(-1), { {id}, {"1"} }};
+			// ex = {peeks(-1), { {id}, {"1"} }};
+			cmd.get("expr").push({"operator", "+", {
+				{"identifier", id},
+				{"number", "1"}
+			}});
 		}
 		// modify-equals
 		else if (
 				acceptm({"+", "="})
 				|| acceptm({"-", "="})
-				|| acceptm({"-", "="})
-				|| acceptm({"-", "="}) ) {
-			ex = {peeks(-2), { {id}, {"??"} }};
+				|| acceptm({"*", "="})
+				|| acceptm({"/", "="}) ) {
+			// parse temporary expression
+			auto op = peeks(-2);
+			ASTnode ex = {"expr"};
+			// ex = {peeks(-2), { {id}, {"??"} }};
 			// if (expr(ex.get(1)) < 1) goto err;
-			if (expr(cmd.get("expr")) < 1) goto err;
+			if (expr(ex) < 1) goto err;
+			// append to += expression
+			cmd.get("expr").push({ "operator", op, {
+				{"identifier", id},
+				ex.children[0]
+			}});
 		}
 		// unknown
 		else goto err;
