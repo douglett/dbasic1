@@ -1,6 +1,7 @@
 #pragma once
 #include "../helpers/parsetools.hpp"
 #include "../helpers/node.hpp"
+#include "../helpers/astnode.hpp"
 #include "tokenizer.hpp"
 
 struct ParserBase : ParseTools {
