@@ -59,17 +59,12 @@ struct Parser : ParserExpression {
 			// {"name"},
 			{"expr"}
 		}});
-		// Node ex = { "expr", { {"0"} } };
-		// ASTnode& ex2 = dim.get("expr").push({ "??" });
 		if (!identifier()) goto err; // dim name
 		// dim.value = dim.get("name").value = peeks(-1); // save name
 		dim.value = peeks(-1); // save name
 		// initial value expression
 		if (!expect("="))
-			// dim.get("expr").push({ "number", "0" }); // assign default value (0)
-			// ex2 = { "number", "0" }; // assign default value (0)
 			dim.get("expr").push({ "number", "0" }); // assign default value (0)
-		// else if (expr( dim.get("expr").pushs("??") ) < 1) 
 		else if (expr(dim.get("expr")) < 1) 
 			goto err;
 		if (!lineend()) goto err; // end of line
@@ -98,8 +93,6 @@ struct Parser : ParserExpression {
 			{"expr"},
 			{"block"}
 		}});
-		// Node ex = { "expr", { {"0"} } };
-		// ASTnode& ex2 = cmd.get("expr").push({ "??" });
 		if (expr(cmd.get("expr")) < 1 || !expect("then") || !lineend()) goto err;
 		if (block(cmd.get("block")) < 1) goto err;
 		if (!expect("end") || !expect("if") || !lineend()) goto err;
@@ -114,8 +107,6 @@ struct Parser : ParserExpression {
 			{"expr"},
 			{"block"}
 		}});
-		// Node ex = { "expr", { {"0"} } };
-		// ASTnode& ex2 = cmd.get("expr").push({ "??" });
 		int ok = 
 			expr( cmd.get("expr") ) == 1 
 			&& expect("do") 
@@ -162,31 +153,23 @@ struct Parser : ParserExpression {
 
 	int cmdret(ASTnode& blk) {
 		if (!expect("return")) return 0;
-		// Node& cmd = blk.pushs("return");
-		// auto& ex = cmd.pushs("expr").pushs("0"); // default return
 		ASTnode& cmd = blk.push({ "return", "", {
-			// {"expr", "", { {"number", "0"} } }
 			{"expr"}
 		}});
-		// Node ex = { "expr", { {"0"} } };
-		// ASTnode& ex2 = cmd.get("expr").push({ "??" });
-		if (lineend()) return cmd.get("expr").push({ "number", "0" }), 1;
-		if (expr(cmd.get("expr")) < 1 || !lineend()) goto err;
+		if (lineend()) return cmd.get("expr").push({ "number", "0" }), 1; // default return (0)
+		if (expr(cmd.get("expr")) < 1 || !lineend()) goto err; // parse return expression
 		return 1;
 		err:
 		return doerr("return"), -1;
 	}
 
 	int cmdassign(ASTnode& blk) {
-		// int p = pos;
 		if (!identifier()) return 0;
 		auto& id = peeks(-1);
 		ASTnode& cmd = blk.push({"assign", "", {
 			{"identifier", id},
 			{"expr"}
 		}});
-		Node ex = { "expr", { {"0"} } };
-		// ASTnode& ex2 = cmd.get("expr").push({ "??" });
 		// normal set
 		if (expect("=")) {
 		 	if (expr(cmd.get("expr")) < 1) goto err;
@@ -195,7 +178,6 @@ struct Parser : ParserExpression {
 		else if (
 				acceptm({"+", "+"})
 				|| acceptm({"-", "-"}) ) {
-			// ex = {peeks(-1), { {id}, {"1"} }};
 			cmd.get("expr").push({"operator", "+", {
 				{"identifier", id},
 				{"number", "1"}
@@ -210,8 +192,6 @@ struct Parser : ParserExpression {
 			// parse temporary expression
 			auto op = peeks(-2);
 			ASTnode ex = {"expr"};
-			// ex = {peeks(-2), { {id}, {"??"} }};
-			// if (expr(ex.get(1)) < 1) goto err;
 			if (expr(ex) < 1) goto err;
 			// append to += expression
 			cmd.get("expr").push({ "operator", op, {

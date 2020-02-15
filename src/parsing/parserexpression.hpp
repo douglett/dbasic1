@@ -4,15 +4,9 @@
 
 struct ParserExpression : ParserBase {
 
-	// int expr(Node& ex) {
-	// 	return expr_top(ex);
-	// }
-
 	int expr(ASTnode& ex) {
 		if (ex.type != "expr") throw std::string("expected expr node");
-		ex.children = { {"??"} };
-		// Node n;
-		// return expr_top(n);
+		ex.children = { {"??"} }; // put expression here (default unusable value)
 		return expr_top(ex.children[0]);
 	}
 
