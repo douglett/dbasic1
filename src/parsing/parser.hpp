@@ -41,10 +41,9 @@ struct Parser : ParserExpression {
 			{"block"}
 		}});
 		if (identifier() <= 0) goto err; // function name
-		// func.get("name").pushs(peeks(-1)); // save function name
-		func2.value = func2.find("name").at(0)->value = peeks(-1); // save function name
+		func2.value = func2.get("name").value = peeks(-1); // save function name
 		if (!expect("(") || !expect(")") || !lineend()) goto err; // args (TEMP)
-		if (locals(func.get("locals")) < 0) goto err; // local dims (can be none)
+		if (locals(func2.get("locals")) < 0) goto err; // local dims (can be none)
 		if (block(func.get("block")) <= 0) goto err; // main function block (can be empty)
 		if (!expect("end") || !expect("function") || !lineend()) goto err; // function end
 		return 1;
@@ -52,31 +51,33 @@ struct Parser : ParserExpression {
 		return doerr("function");
 	}
 
-	int locals(Node& locals) {
+	int locals(ASTnode& locals) {
 		while (true) {
 			int res = dim(locals);
 			if (res == -1) goto err; // error in dim
 			if (res == 0) break; // no more dims
 		}
-		return !!locals.list.size(); // 1 or 0
+		return locals.children.size() > 0; // 1 or 0
 		err:
 		return doerr("function-locals");
 	}
 
-	int dim(Node& blk) {
+	int dim(ASTnode& blk) {
 		if (!expect("dim")) return 0;
-		Node& dim = blk.push({"dim", {
-			{"name"},
+		ASTnode& dim = blk.push({"dim", "", {
+			// {"name"},
 			{"expr"}
 		}});
+		Node tmp = { "expr", { {"0"} } };
 		if (!identifier()) goto err; // dim name
-		dim.get("name").pushs(peeks(-1)); // save name
+		// dim.value = dim.get("name").value = peeks(-1); // save name
+		dim.value = peeks(-1); // save name
 		// initial value expression
-		if (expect("=")) {
-			if (expr( dim.get("expr").pushs("??") ) < 1) goto err;
-		}
-		else
-			dim.get("expr").pushs("0"); // assign default value (0)
+		if (!expect("="))
+			dim.get("expr").push({ "number", "0" }); // assign default value (0)
+		// else if (expr( dim.get("expr").pushs("??") ) < 1) 
+		else if (expr( tmp ) < 1) 
+			goto err;
 		if (!lineend()) goto err; // end of line
 		return 1;
 		err:
