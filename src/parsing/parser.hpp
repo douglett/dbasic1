@@ -59,17 +59,18 @@ struct Parser : ParserExpression {
 			// {"name"},
 			{"expr"}
 		}});
-		Node ex = { "expr", { {"0"} } };
-		ASTnode& ex2 = dim.get("expr").push({ "??" });
+		// Node ex = { "expr", { {"0"} } };
+		// ASTnode& ex2 = dim.get("expr").push({ "??" });
 		if (!identifier()) goto err; // dim name
 		// dim.value = dim.get("name").value = peeks(-1); // save name
 		dim.value = peeks(-1); // save name
 		// initial value expression
 		if (!expect("="))
 			// dim.get("expr").push({ "number", "0" }); // assign default value (0)
-			ex2 = { "number", "0" }; // assign default value (0)
+			// ex2 = { "number", "0" }; // assign default value (0)
+			dim.get("expr").push({ "number", "0" }); // assign default value (0)
 		// else if (expr( dim.get("expr").pushs("??") ) < 1) 
-		else if (expr( ex ) < 1) 
+		else if (expr(dim.get("expr")) < 1) 
 			goto err;
 		if (!lineend()) goto err; // end of line
 		return 1;
@@ -97,9 +98,9 @@ struct Parser : ParserExpression {
 			{"expr"},
 			{"block"}
 		}});
-		Node ex = { "expr", { {"0"} } };
-		ASTnode& ex2 = cmd.get("expr").push({ "??" });
-		if (expr(ex) < 1 || !expect("then") || !lineend()) goto err;
+		// Node ex = { "expr", { {"0"} } };
+		// ASTnode& ex2 = cmd.get("expr").push({ "??" });
+		if (expr(cmd.get("expr")) < 1 || !expect("then") || !lineend()) goto err;
 		if (block(cmd.get("block")) < 1) goto err;
 		if (!expect("end") || !expect("if") || !lineend()) goto err;
 		return 1;
@@ -113,10 +114,10 @@ struct Parser : ParserExpression {
 			{"expr"},
 			{"block"}
 		}});
-		Node ex = { "expr", { {"0"} } };
-		ASTnode& ex2 = cmd.get("expr").push({ "??" });
+		// Node ex = { "expr", { {"0"} } };
+		// ASTnode& ex2 = cmd.get("expr").push({ "??" });
 		int ok = 
-			expr( ex ) == 1 
+			expr( cmd.get("expr") ) == 1 
 			&& expect("do") 
 			&& lineend()
 			&& block( cmd.get("block") ) == 1
@@ -164,12 +165,13 @@ struct Parser : ParserExpression {
 		// Node& cmd = blk.pushs("return");
 		// auto& ex = cmd.pushs("expr").pushs("0"); // default return
 		ASTnode& cmd = blk.push({ "return", "", {
-			{"expr", "", { {"number", "0"} } }
+			// {"expr", "", { {"number", "0"} } }
+			{"expr"}
 		}});
-		Node ex = { "expr", { {"0"} } };
-		ASTnode& ex2 = cmd.get("expr").push({ "??" });
-		if (lineend()) return 1;
-		if (expr(ex) < 1 || !lineend()) goto err;
+		// Node ex = { "expr", { {"0"} } };
+		// ASTnode& ex2 = cmd.get("expr").push({ "??" });
+		if (lineend()) return cmd.get("expr").push({ "number", "0" }), 1;
+		if (expr(cmd.get("expr")) < 1 || !lineend()) goto err;
 		return 1;
 		err:
 		return doerr("return"), -1;
@@ -184,10 +186,10 @@ struct Parser : ParserExpression {
 			{"expr"}
 		}});
 		Node ex = { "expr", { {"0"} } };
-		ASTnode& ex2 = cmd.get("expr").push({ "??" });
+		// ASTnode& ex2 = cmd.get("expr").push({ "??" });
 		// normal set
 		if (expect("=")) {
-		 	if (expr(ex) < 1) goto err;
+		 	if (expr(cmd.get("expr")) < 1) goto err;
 		}
 		// increment / decrement
 		else if (
@@ -202,7 +204,8 @@ struct Parser : ParserExpression {
 				|| acceptm({"-", "="})
 				|| acceptm({"-", "="}) ) {
 			ex = {peeks(-2), { {id}, {"??"} }};
-			if (expr(ex.get(1)) < 1) goto err;
+			// if (expr(ex.get(1)) < 1) goto err;
+			if (expr(cmd.get("expr")) < 1) goto err;
 		}
 		// unknown
 		else goto err;

@@ -1,9 +1,21 @@
 #pragma once
 #include "parserbase.hpp"
+#include <cassert>
 
 struct ParserExpression : ParserBase {
 
 	int expr(Node& ex) {
+		return expr_top(ex);
+	}
+
+	int expr(ASTnode& ex) {
+		if (ex.type != "expr") throw std::string("expected expr node");
+		ex.children = {};
+		Node n;
+		return expr_top(n);
+	}
+
+	int expr_top(Node& ex) {
 		return expr_eq(ex);
 	}
 
@@ -45,7 +57,7 @@ struct ParserExpression : ParserBase {
 	}
 
 	int expr_brackets(Node& ex) {
-		if (!expect("(") || expr(ex) < 1 || !expect(")")) return -1;
+		if (!expect("(") || expr_top(ex) < 1 || !expect(")")) return -1;
 		ex = {"()", { ex }};
 		return 1;
 	}
