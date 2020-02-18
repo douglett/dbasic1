@@ -20,15 +20,15 @@ struct ParserExpression : ParserBase {
 		else if (acceptm({"=", "="}) || acceptm({"!", "="})) op = peek(-2).val + "=";
 		else if (expect(">") || expect("<")) op = peek(-1).val;
 		else    return 1;
-		ex = {"operator", op, { ex }};
-		return expr_add(ex.children[0]);
+		ex = {"operator", op, { ex, {"??"} }};
+		return expr_add(ex.children[1]);
 	}
 
 	int expr_add(ASTnode& ex) {
 		if (!expr_mul(ex)) return 0;
 		while (expect("+") || expect("-")) {
-			ex = {"operator", peek(-1).val, { ex }};
-			if (!expr_mul(ex.children[0])) return 0;
+			ex = {"operator", peek(-1).val, { ex, {"??"} }};
+			if (!expr_mul(ex.children[1])) return 0;
 		}
 		return 1;
 	}
@@ -36,8 +36,8 @@ struct ParserExpression : ParserBase {
 	int expr_mul(ASTnode& ex) {
 		if (!expr_atom(ex)) return 0;
 		while (expect("*") || expect("/")) {
-			ex = {"operator", peek(-1).val, { ex }};
-			if (!expr_atom(ex.children[0])) return 0;
+			ex = {"operator", peek(-1).val, { ex, {"??"} }};
+			if (!expr_atom(ex.children[1])) return 0;
 		}
 		return 1;
 	}
