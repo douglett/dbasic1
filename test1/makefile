@@ -1,9 +1,11 @@
 SRC = main.cpp
-HEAD = helpers/parsetools.hpp helpers/node.hpp helpers/astnode.hpp \
-	parsing/tokenizer.hpp \
-	parsing/parserbase.hpp parsing/parserexpression.hpp parsing/parser.hpp \
-	parsing/validate.hpp \
-	parsing/compiler.hpp
+PPATH = ../parser
+# HEAD = \
+# 	${PPATH}/tokenizer.hpp \
+# 	${PPATH}/astnode.hpp ${PPATH}/parsetools.hpp \
+# 	${PPATH}/parserbase.hpp ${PPATH}/parserexpression.hpp ${PPATH}/parser.hpp \
+# 	${PPATH}/validate.hpp 
+HEAD = ${PPATH}/*.hpp
 
 main.out: $(SRC) $(HEAD)
 	g++ -std=c++14 -Wall -o main.out $(SRC)

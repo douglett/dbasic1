@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include "../helpers/parsetools.hpp"
+#include "parsetools.hpp"
 
 struct Token {
 	std::string val;

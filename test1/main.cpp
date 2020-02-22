@@ -1,8 +1,6 @@
 #include <iostream>
-#include "parsing/tokenizer.hpp"
-#include "parsing/parser.hpp"
-#include "parsing/compiler.hpp"
-#include "parsing/validate.hpp"
+// #include "parser/tokenizer.hpp"
+#include "../parser/parser.hpp"
 
 int main() {
 	const std::string fname = "test.bas";
