@@ -18,9 +18,22 @@ struct ASTnode {
 				return node;
 		throw std::string("not found: ["+type+"]");
 	}
+	const ASTnode& get(const std::string& type, const std::string& value="") const {
+		for (auto& node : children)
+			if (node.type == type && (value == "" || node.value == value))
+				return node;
+		throw std::string("not found: ["+type+"]");
+	}
 
 	std::vector<ASTnode*> find(const std::string& type) {
 		std::vector<ASTnode*> result;
+		for (auto& node : children)
+			if (node.type == type)
+				result.push_back(&node);
+		return result;
+	}
+	std::vector<const ASTnode*> find(const std::string& type) const {
+		std::vector<const ASTnode*> result;
 		for (auto& node : children)
 			if (node.type == type)
 				result.push_back(&node);
