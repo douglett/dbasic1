@@ -43,7 +43,10 @@ struct ParserExpression : ParserBase {
 	}
 
 	int expr_atom(ASTnode& ex) {
-		if      (identifier()) ex = { "identifier", peek(-1).val };
+		if (identifier()) {
+			ex = { "identifier", peeks(-1) }; // normal identifier
+			if (acceptm({ "(", ")" })) ex = { "call", peeks(-3) }; // function call
+		}
 		else if (number()) ex = { "number", peek(-1).val };
 		else if (peek().val == "(") return expr_brackets(ex);
 		else    return 0;

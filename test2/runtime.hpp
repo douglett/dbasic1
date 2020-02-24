@@ -56,6 +56,7 @@ struct Runtime {
 		if (ex.type == "expr"      ) return expr(ex.children.at(0));
 		if (ex.type == "number"    ) return std::stoi(ex.value);
 		if (ex.type == "identifier") return getvar(ex.value);
+		if (ex.type == "call"      ) return func(ast.get("function", ex.value));
 		if (ex.type == "operator" && ex.value == "+") return expr(ex.children.at(0)) + expr(ex.children.at(1));
 		if (ex.type == "operator" && ex.value == "-") return expr(ex.children.at(0)) - expr(ex.children.at(1));
 		if (ex.type == "operator" && ex.value == "*") return expr(ex.children.at(0)) * expr(ex.children.at(1));
@@ -65,8 +66,9 @@ struct Runtime {
 
 	int block(const ASTnode& block) {
 		for (auto& stmt : block.children) {
-			if      (stmt.type == "assign") getvar(stmt.get("identifier").value) = expr(stmt.get("expr"));
-			else if (stmt.type == "return") return expr(stmt.get("expr"));
+			if      (stmt.type == "return") return expr(stmt.get("expr"));
+			else if (stmt.type == "expr"  ) expr(stmt);
+			else if (stmt.type == "assign") getvar(stmt.get("identifier").value) = expr(stmt.get("expr"));
 			else    throw std::string("unexpected in block: " + stmt.type);
 		}
 		throw std::string("missing return value in block");

@@ -12,11 +12,18 @@ struct ASTnode {
 		return children.back();
 	}
 
+	ASTnode pop() {
+		if (children.size() == 0) throw std::string("pop from empty ASTnode");
+		ASTnode n = children.back();
+		children.pop_back();
+		return n;
+	}
+
 	ASTnode& get(const std::string& type, const std::string& value="") {
 		for (auto& node : children)
 			if (node.type == type && (value == "" || node.value == value))
 				return node;
-		throw std::string("not found: ["+type+"]");
+		throw std::string("not found: ["+type+"]"+(value == "" ? "" : " ["+value+"]"));
 	}
 	const ASTnode& get(const std::string& type, const std::string& value="") const {
 		for (auto& node : children)

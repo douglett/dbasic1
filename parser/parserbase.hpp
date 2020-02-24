@@ -27,7 +27,7 @@ struct ParserBase : ParseTools {
 		return 1;
 	}
 	int acceptm(const vecstr& vs) {
-		int p = pos;
+		const int p = pos;
 		if (expectm(vs)) return 1;
 		return pos = p, 0;
 	}

@@ -65,7 +65,7 @@ struct Parser : ParserExpression {
 		// initial value expression
 		if (!expect("="))
 			dim.get("expr").push({ "number", "0" }); // assign default value (0)
-		else if (expr(dim.get("expr")) < 1) 
+		else if (expr(dim.get("expr")) < 1)
 			goto err;
 		if (!lineend()) goto err; // end of line
 		return 1;
@@ -81,6 +81,7 @@ struct Parser : ParserExpression {
 			else if (cmdfor(blk) == 1) ;
 			else if (cmdret(blk) == 1) ;
 			else if (cmdassign(blk) == 1) ;
+			else if (cmdexpr(blk) == 1) ;
 			else    goto err; // unexpected in block
 		return 1;
 		err:
@@ -107,12 +108,12 @@ struct Parser : ParserExpression {
 			{"expr"},
 			{"block"}
 		}});
-		int ok = 
-			expr( cmd.get("expr") ) == 1 
-			&& expect("do") 
+		int ok =
+			expr( cmd.get("expr") ) == 1
+			&& expect("do")
 			&& lineend()
 			&& block( cmd.get("block") ) == 1
-			&& expectm({ "end", "while" }) 
+			&& expectm({ "end", "while" })
 			&& lineend();
 		return ok ? 1 : doerr("if");
 	}
@@ -164,6 +165,7 @@ struct Parser : ParserExpression {
 	}
 
 	int cmdassign(ASTnode& blk) {
+		const int p = pos;
 		if (!identifier()) return 0;
 		auto& id = peeks(-1);
 		ASTnode& cmd = blk.push({"assign", "", {
@@ -199,11 +201,24 @@ struct Parser : ParserExpression {
 				ex.children.at(0)
 			}});
 		}
-		// unknown
-		else goto err;
+		// not assignment
+		else {
+			blk.pop();
+			return pos = p, 0;
+		}
 		if (!lineend()) goto err; // eol
 		return 1;
 		err:
 		return doerr("assign");
+	}
+
+	int cmdexpr(ASTnode& blk) {
+		auto& ex = blk.push({ "expr" });
+		int res = expr(ex);
+		if (res  < 0) goto err;
+		if (res == 0) return blk.pop(), 0;
+		return res;
+		err:
+		return doerr("cmdexpr");
 	}
 };
