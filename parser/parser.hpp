@@ -30,16 +30,28 @@ struct Parser : ParserExpression {
 			{"locals"},
 			{"block"}
 		}});
-		if (identifier() <= 0) goto err; // function name
-		// func.value = func.get("name").value = peeks(-1); // save function name
-		func.value = peeks(-1); // save function name
-		if (!expect("(") || !expect(")") || !lineend()) goto err; // args (TEMP)
-		if (locals(func.get("locals")) < 0) goto err; // local dims (can be none)
-		if (block(func.get("block")) <= 0) goto err; // main function block (can be empty)
-		if (!expect("end") || !expect("function") || !lineend()) goto err; // function end
-		return 1;
-		err:
-		return doerr("function");
+
+		// if (identifier() <= 0) goto err; // function name
+		// // func.value = func.get("name").value = peeks(-1); // save function name
+		// func.value = peeks(-1); // save function name
+		// if (!expect("(") || !expect(")") || !lineend()) goto err; // args (TEMP)
+		// if (locals(func.get("locals")) < 0) goto err; // local dims (can be none)
+		// if (block(func.get("block")) <= 0) goto err; // main function block (can be empty)
+		// if (!expect("end") || !expect("function") || !lineend()) goto err; // function end
+		// return 1;
+		// err:
+		// return doerr("function");
+
+		int ok =
+			identifier() // function name
+			&& (func.value = peeks(-1), 1) // save function name
+			&& expectm({ "(", ")" }) // args (TEMP)
+			&& lineend()
+			&& locals( func.get("locals") ) >= 0 // locals (can be nothing)
+			&& block( func.get("block") ) == 1 // main function block
+			&& expectm({ "end", "function" })
+			&& lineend();
+		return ok ? 1 : doerr("function");
 	}
 
 	int locals(ASTnode& locals) {
