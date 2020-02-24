@@ -13,7 +13,7 @@ int main() {
 
 	Parser p(t);
 	p.parse();
-	cout << p.ast.show() << endl;
+	cout << p.ast.showc() << endl;
 
 	Runtime r(p.ast);
 	r.run();

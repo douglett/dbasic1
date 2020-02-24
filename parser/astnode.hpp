@@ -49,12 +49,15 @@ struct ASTnode {
 
 	// helper
 	std::string show(int indent=0) const {
-		// auto s = std::string(indent*2, ' ') + "[" + type + "] " + value;
-		// auto s = std::string(indent*2, ' ') + type + ": " + value;
-		// auto s = std::string(indent*2, ' ') + type + (value.length() ? " ["+value+"]" : "");
-		auto s = std::string(indent*2, ' ') + "\033[36m" + type + "\033[92m " + value + "\033[0m";
+		auto s = std::string(indent*2, ' ') + type + (value.length() ? " ["+value+"]" : "");
 		for (auto& node : children)
 			s += "\n" + node.show(indent + 1);
+		return s;
+	}
+	std::string showc(int indent=0) const {
+		auto s = std::string(indent*2, ' ') + "\033[36m" + type + "\033[92m " + value + "\033[0m";
+		for (auto& node : children)
+			s += "\n" + node.showc(indent + 1);
 		return s;
 	}
 };

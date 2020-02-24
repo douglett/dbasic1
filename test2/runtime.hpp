@@ -68,6 +68,7 @@ struct Runtime {
 		for (auto& stmt : block.children) {
 			if      (stmt.type == "return") return expr(stmt.get("expr"));
 			else if (stmt.type == "expr"  ) expr(stmt);
+			// else if (stmt.type == "call"  ) expr(stmt);
 			else if (stmt.type == "assign") getvar(stmt.get("identifier").value) = expr(stmt.get("expr"));
 			else    throw std::string("unexpected in block: " + stmt.type);
 		}

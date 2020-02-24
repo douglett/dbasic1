@@ -82,6 +82,7 @@ struct Parser : ParserExpression {
 			else if (cmdret(blk) == 1) ;
 			else if (cmdassign(blk) == 1) ;
 			else if (cmdexpr(blk) == 1) ;
+			// else if (cmdcall(blk) == 1) ;
 			else    goto err; // unexpected in block
 		return 1;
 		err:
@@ -221,4 +222,14 @@ struct Parser : ParserExpression {
 		err:
 		return doerr("cmdexpr");
 	}
+
+	// int cmdcall(ASTnode& blk) {
+	// 	auto& ex = blk.push({ "??" });
+	// 	int res = expr_call(ex);
+	// 	if (res  < 0) goto err;
+	// 	if (res == 0) return blk.pop(), 0;
+	// 	return res;
+	// 	err:
+	// 	return doerr("cmdcall");
+	// }
 };
