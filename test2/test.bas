@@ -5,6 +5,9 @@ function main()
 	a++
 	fn()
 	butt = fn()
+	if a == 1 then
+		a ++
+	end if
 	return a
 end function
 

@@ -10,7 +10,7 @@ struct Parser : ParserExpression {
 		pos = 0;
 		int result = prog(ast);
 		// printf("parse result: %d\n", result);
-		return result;
+		return result != 1; // returns 1 on error to outside
 	}
 
 	int prog(ASTnode& prog) {
@@ -95,12 +95,14 @@ struct Parser : ParserExpression {
 			{"expr"},
 			{"block"}
 		}});
-		if (expr(cmd.get("expr")) < 1 || !expect("then") || !lineend()) goto err;
-		if (block(cmd.get("block")) < 1) goto err;
-		if (!expect("end") || !expect("if") || !lineend()) goto err;
-		return 1;
-		err:
-		return doerr("if");
+		int ok =
+			expr( cmd.get("expr") ) == 1
+			&& expect("then")
+			&& lineend()
+			&& block( cmd.get("block") ) == 1
+			&& expectm({ "end", "if" })
+			&& lineend();
+		return ok ? 1 : doerr("if");
 	}
 
 	int cmdwhile(ASTnode& blk) {

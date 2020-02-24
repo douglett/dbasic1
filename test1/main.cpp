@@ -17,7 +17,7 @@ int main() {
 
 	printf("::parse::\n");
 	Parser par(tok);
-	if (par.parse() < 1) return 1;
+	if (par.parse()) return 1;
 	printf("  parse : ok\n");
 	std::cout << par.ast.show() << std::endl;
 	return 0;

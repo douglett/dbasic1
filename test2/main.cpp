@@ -7,12 +7,11 @@ int main() {
 	printf("runtime test\n");
 
 	Tokenizer t;
-	t.load("test.bas");
-	t.parse();
+	if (t.load("test.bas") || t.parse()) return 1;
 	//cout << t.show() << endl;
 
 	Parser p(t);
-	p.parse();
+	if (p.parse()) return 1;
 	cout << p.ast.showc() << endl;
 
 	Runtime r(p.ast);
