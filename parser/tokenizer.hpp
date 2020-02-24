@@ -12,6 +12,7 @@ struct Token {
 struct Tokenizer : ParseTools {
 	std::vector<std::string> lines;
 	std::vector<Token> tokens;
+	Token eof_tok;
 	int line = 0;
 
 	int load(const std::string& fname) {
@@ -27,6 +28,12 @@ struct Tokenizer : ParseTools {
 	void pushs(std::string& s, int lno) {
 		if (s.length())
 			tokens.push_back({ s, lno }), s = "";
+	}
+
+	const Token& get(int pos) {
+		if (pos < 0 || pos >= (int)tokens.size())
+			return eof_tok = { "[EOF]", (int)lines.size() };
+		return tokens.at(pos);
 	}
 
 	int parse() {
@@ -57,15 +64,15 @@ struct Tokenizer : ParseTools {
 			if (s.length()) tokens.push_back({ s, lno });
 			tokens.push_back({ "[EOL]", lno });
 		}
-		if (tokens.size()) tokens.pop_back();
-		tokens.push_back({ "[EOF]", lno });
+		if (tokens.size()) tokens.pop_back(); // pop last EOL, which was automatically added
+		// tokens.push_back({ "[EOF]", lno });
 		return 0;
 	}
 
 	std::string show() {
 		std::string s;
 		for (const auto& t : tokens)
-			s += "\n  [" + t.val + "]";
+			s = s + (s.length() ? "\n" : "") + "  [" + t.val + "]";
 		return s;
 	}
 };

@@ -9,7 +9,7 @@ struct ParserBase : ParseTools {
 
 	// basic look-ahead
 	const Token& peek(int offset=0) {
-		return tok.tokens.at(pos + offset);
+		return tok.get(pos + offset);
 	}
 	const std::string& peeks(int offset=0) {
 		return peek(offset).val;

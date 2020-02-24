@@ -196,7 +196,7 @@ struct Parser : ParserExpression {
 			// append to += expression
 			cmd.get("expr").push({ "operator", op, {
 				{"identifier", id},
-				ex.children[0]
+				ex.children.at(0)
 			}});
 		}
 		// unknown
