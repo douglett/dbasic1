@@ -57,12 +57,10 @@ struct Parser : ParserExpression {
 	int locals(ASTnode& locals) {
 		while (true) {
 			int res = dim(locals);
-			if (res == -1) goto err; // error in dim
-			if (res == 0) break; // no more dims
+			if (res == -1) doerr("function-locals"); // error in dim
+			if (res ==  0) break; // no more dims
 		}
 		return locals.children.size() > 0; // 1 or 0
-		err:
-		return doerr("function-locals");
 	}
 
 	int dim(ASTnode& blk) {
@@ -71,18 +69,29 @@ struct Parser : ParserExpression {
 			// {"name"},
 			{"expr"}
 		}});
-		if (!identifier()) goto err; // dim name
-		// dim.value = dim.get("name").value = peeks(-1); // save name
-		dim.value = peeks(-1); // save name
-		// initial value expression
-		if (!expect("="))
-			dim.get("expr").push({ "number", "0" }); // assign default value (0)
-		else if (expr(dim.get("expr")) < 1)
-			goto err;
-		if (!lineend()) goto err; // end of line
-		return 1;
-		err:
-		return doerr("dim");
+
+//		if (!identifier()) goto err; // dim name
+//		// dim.value = dim.get("name").value = peeks(-1); // save name
+//		dim.value = peeks(-1); // save name
+//		// initial value expression
+//		if (!expect("="))
+//			dim.get("expr").push({ "number", "0" }); // assign default value (0)
+//		else if (expr(dim.get("expr")) < 1)
+//			goto err;
+//		if (!lineend()) goto err; // end of line
+//		return 1;
+//		err:
+//		return doerr("dim");
+
+		int ok =
+			identifier()
+			&& (dim.value = peeks(-1), 1) // save variable name
+			&& (
+				(expect("=") && expr( dim.get("expr") )) // assignment expression
+				|| (dim.get("expr").push({ "number", "0" }), 1) // assign default value (0)
+			)
+			&& lineend();
+		return ok ? 1 : doerr("dim");
 	}
 
 	int block(ASTnode& blk) {

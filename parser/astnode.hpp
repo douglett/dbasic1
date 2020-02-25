@@ -32,6 +32,13 @@ struct ASTnode {
 		throw std::string("not found: ["+type+"]");
 	}
 
+	int count(const std::string& type) const {
+		int c = 0;
+		for (auto& node : children)
+			c += (node.type == type);
+		return c;
+	}
+
 	std::vector<ASTnode*> find(const std::string& type) {
 		std::vector<ASTnode*> result;
 		for (auto& node : children)
