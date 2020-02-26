@@ -30,18 +30,6 @@ struct Parser : ParserExpression {
 			{"locals"},
 			{"block"}
 		}});
-
-		// if (identifier() <= 0) goto err; // function name
-		// // func.value = func.get("name").value = peeks(-1); // save function name
-		// func.value = peeks(-1); // save function name
-		// if (!expect("(") || !expect(")") || !lineend()) goto err; // args (TEMP)
-		// if (locals(func.get("locals")) < 0) goto err; // local dims (can be none)
-		// if (block(func.get("block")) <= 0) goto err; // main function block (can be empty)
-		// if (!expect("end") || !expect("function") || !lineend()) goto err; // function end
-		// return 1;
-		// err:
-		// return doerr("function");
-
 		int ok =
 			identifier() // function name
 			&& (func.value = peeks(-1), 1) // save function name
@@ -57,7 +45,7 @@ struct Parser : ParserExpression {
 	int locals(ASTnode& locals) {
 		while (true) {
 			int res = dim(locals);
-			if (res == -1) doerr("function-locals"); // error in dim
+			if (res == -1) return doerr("function-locals"); // error in dim
 			if (res ==  0) break; // no more dims
 		}
 		return locals.children.size() > 0; // 1 or 0
@@ -69,20 +57,6 @@ struct Parser : ParserExpression {
 			// {"name"},
 			{"expr"}
 		}});
-
-//		if (!identifier()) goto err; // dim name
-//		// dim.value = dim.get("name").value = peeks(-1); // save name
-//		dim.value = peeks(-1); // save name
-//		// initial value expression
-//		if (!expect("="))
-//			dim.get("expr").push({ "number", "0" }); // assign default value (0)
-//		else if (expr(dim.get("expr")) < 1)
-//			goto err;
-//		if (!lineend()) goto err; // end of line
-//		return 1;
-//		err:
-//		return doerr("dim");
-
 		int ok =
 			identifier()
 			&& (dim.value = peeks(-1), 1) // save variable name
@@ -185,7 +159,7 @@ struct Parser : ParserExpression {
 		if (expr(cmd.get("expr")) < 1 || !lineend()) goto err; // parse return expression
 		return 1;
 		err:
-		return doerr("return"), -1;
+		return doerr("return");
 	}
 
 	int cmdassign(ASTnode& blk) {
@@ -239,11 +213,9 @@ struct Parser : ParserExpression {
 	int cmdexpr(ASTnode& blk) {
 		auto& ex = blk.push({ "expr" });
 		int res = expr(ex);
-		if (res  < 0) goto err;
-		if (res == 0) return blk.pop(), 0;
+		if (res  < 0) return doerr("cmdexpr");
+		if (res == 0) blk.pop();
 		return res;
-		err:
-		return doerr("cmdexpr");
 	}
 
 	// int cmdcall(ASTnode& blk) {
