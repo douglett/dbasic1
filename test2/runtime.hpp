@@ -13,8 +13,8 @@ struct Runtime {
 	int run() {
 		try {
 			sframe = { {} }; // one empty global scope
-			dim_globals();
-			int res = func( ast.get("function", "main") );
+			dim_locals( ast, global() ); // dim global variables
+			int res = func( ast.get("function", "main") ); // run main
 			printf("main returns: %d\n", res);
 			return res;
 		}
@@ -72,8 +72,8 @@ struct Runtime {
 
 	int sysfunc(const ASTnode& callsig) {
 		if (callsig.value == "malloc") { auto argv = getargs(callsig, 1); return mem_alloc(argv[0]); }
-		if (callsig.value == "peek"  ) { auto argv = getargs(callsig, 2); return mem_peek(argv[0], argv[1]); }
-		if (callsig.value == "poke"  ) { auto argv = getargs(callsig, 3); return mem_poke(argv[0], argv[1], argv[2]); }
+		if (callsig.value == "peek"  ) { auto argv = getargs(callsig, 2); return mem_peek (argv[0], argv[1]); }
+		if (callsig.value == "poke"  ) { auto argv = getargs(callsig, 3); return mem_poke (argv[0], argv[1], argv[2]); }
 		return func( ast.get("function", callsig.value) );
 	}
 
@@ -84,12 +84,6 @@ struct Runtime {
 		int res = block( fn.get("block") );
 		showframe( top() ); // end local state
 		sframe.pop_back(); // pop local frame
-		return res;
-	}
-
-	int dim_globals() {
-		int res = dim_locals( ast, global() );
-		showframe( global() );
 		return res;
 	}
 
