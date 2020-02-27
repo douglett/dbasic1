@@ -1,4 +1,4 @@
-dim mem = malloc(20, 25*2)
+dim mem = malloc(20)
 dim acc
 
 function main()

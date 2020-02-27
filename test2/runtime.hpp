@@ -71,21 +71,9 @@ struct Runtime {
 	}
 
 	int sysfunc(const ASTnode& callsig) {
-		if (callsig.value == "malloc") return mem_alloc(expr( callsig.get("expr") ));
-//		if (callsig.value == "peek"  ) {
-//			auto args = callsig.find("expr");
-//			if (args.size() != 2) throw std::string("peek: incorrect number of arguments");
-//			return mem_peek( expr(*args[0]), expr(*args[1]) );
-//		}
-//		if (callsig.value == "poke"  ) {
-//			auto args = callsig.find("expr");
-//			if (args.size() != 3) throw std::string("poke: incorrect number of arguments");
-//			return mem_poke( expr(*args[0]), expr(*args[1]), expr(*args[2]) );
-//		}
-
+		if (callsig.value == "malloc") { auto argv = getargs(callsig, 1); return mem_alloc(argv[0]); }
 		if (callsig.value == "peek"  ) { auto argv = getargs(callsig, 2); return mem_peek(argv[0], argv[1]); }
 		if (callsig.value == "poke"  ) { auto argv = getargs(callsig, 3); return mem_poke(argv[0], argv[1], argv[2]); }
-
 		return func( ast.get("function", callsig.value) );
 	}
 
