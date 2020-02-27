@@ -29,7 +29,7 @@ struct ASTnode {
 		for (auto& node : children)
 			if (node.type == type && (value == "" || node.value == value))
 				return node;
-		throw std::string("not found: ["+type+"]");
+		throw std::string("not found: ["+type+"]"+(value == "" ? "" : " ["+value+"]"));
 	}
 
 	int count(const std::string& type) const {

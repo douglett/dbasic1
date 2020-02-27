@@ -1,4 +1,4 @@
-dim mem = alloc(20, 25*2)
+dim mem = malloc(20, 25*2)
 dim acc
 
 function main()
@@ -15,6 +15,6 @@ function main()
 end function
 
 function fn()
-	acc++
-	return acc
+	poke(mem, 0, peek(mem, 0) + 3)
+	return peek(mem, 0)
 end function

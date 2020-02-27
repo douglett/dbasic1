@@ -59,12 +59,12 @@ struct ParserExpression : ParserBase {
 	int expr_call(ASTnode& ex) {
 		const int p = pos;
 		if (!identifier() || !expect("(")) return pos = p, 0;
-		ex = { "call", peeks(-2), { {"arguments"} } }; // function call
+		ex = { "call", peeks(-2) }; // function call
 		// arglist
 		while (true) {
 			if (expect(")")) return 1; // list end
-			int argc = ex.get("arguments").count("expr"); // current arg count
-			auto& ex2 = ex.get("arguments").push({"expr"}); // next arg expected
+			int argc = ex.count("expr"); // current arg count
+			auto& ex2 = ex.push({"expr"}); // next arg expected
 			if      (argc == 0 && expr(ex2) == 1) ; // first arg
 			else if (argc  > 0 && expect(",") && expr(ex2) == 1) ; // arg list - 2+
 			else    return -1; // arg not found
