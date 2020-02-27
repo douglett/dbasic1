@@ -23,8 +23,8 @@ struct Runtime {
 	}
 
 	// useful helper functions
-	StackFrame& global() { return sframe.at(0); }
-	StackFrame& top()    { return sframe.at(std::max(1, int(sframe.size() - 1))); }
+	StackFrame& global() { if (sframe.size() < 1) throw std::string("sackframe global() out-of-range");  return sframe.at(0); }
+	StackFrame& top()    { if (sframe.size() < 2) throw std::string("sackframe top() out-of-range");     return sframe.at(sframe.size() - 1); }
 	void showframe(const StackFrame& frame) { for (auto& d : frame) printf("  %s : %d\n", d.first.c_str(), d.second); }
 
 	// get var from stack frame
@@ -32,6 +32,11 @@ struct Runtime {
 		if (   top().count(var)) return    top().at(var); // local
 		if (global().count(var)) return global().at(var); // global
 		throw std::string("missing identifier: " + var);
+	}
+
+	int sysfunc(const ASTnode& callsig) {
+		return 0;
+		// return func( ast.get("function", fnname) );
 	}
 
 	int func(const ASTnode& fn) {

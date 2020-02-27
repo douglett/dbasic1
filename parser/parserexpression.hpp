@@ -34,19 +34,23 @@ struct ParserExpression : ParserBase {
 	}
 
 	int expr_mul(ASTnode& ex) {
-		if (!expr_atom(ex)) return 0;
+		if (!expr_compound(ex)) return 0;
 		while (expect("*") || expect("/")) {
 			ex = {"operator", peeks(-1), { ex, {"??"} }};
-			if (!expr_atom(ex.children.at(1))) return 0;
+			if (!expr_compound(ex.children.at(1))) return 0;
 		}
 		return 1;
 	}
 
-	int expr_atom(ASTnode& ex) {
+	int expr_compound(ASTnode& ex) {
 		int res = 0;
-		if      ((res = expr_call(ex)) != 0) return res; // function call
-		else if ((res = expr_brackets(ex) != 0)) return res; // brackets
-		else if (identifier()) ex = { "identifier", peeks(-1) }; // normal identifier
+		if (res = expr_call(ex), res) return res; // function call
+		if (res = expr_brackets(ex), res) return res; // brackets
+		return expr_atom(ex);
+	}
+
+	int expr_atom(ASTnode& ex) {
+		if      (identifier()) ex = { "identifier", peeks(-1) }; // normal identifier
 		else if (number()) ex = { "number", peeks(-1) }; // number
 		else    return 0;
 		return 1;
@@ -55,15 +59,22 @@ struct ParserExpression : ParserBase {
 	int expr_call(ASTnode& ex) {
 		const int p = pos;
 		if (!identifier() || !expect("(")) return pos = p, 0;
-		ex = { "call", peeks(-2) }; // function call
-		if (!expect(")")) return -1;
-		return 1;
+		ex = { "call", peeks(-2), { {"arguments"} } }; // function call
+		// arglist
+		while (true) {
+			if (expect(")")) return 1; // list end
+			int argc = ex.get("arguments").count("expr"); // current arg count
+			auto& ex2 = ex.get("arguments").push({"expr"}); // next arg expected
+			if      (argc == 0 && expr(ex2) == 1) ; // first arg
+			else if (argc  > 0 && expect(",") && expr(ex2) == 1) ; // arg list - 2+
+			else    return -1; // arg not found
+		}
 	}
 
 	int expr_brackets(ASTnode& ex) {
 		if (!expect("(")) return 0;
 		ex = {"()", "", { {"??"} }};
-		if (expr_top(ex.children.at(0)) < 1 || !expect(")")) return -1;
+		if (expr_top(ex.children.at(0)) < 1 || !expect(")")) return doerr("expr-brackets");
 		return 1;
 	}
 };

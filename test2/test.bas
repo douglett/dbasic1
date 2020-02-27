@@ -1,3 +1,4 @@
+dim mem = alloc(20, 25*2)
 dim acc
 
 function main()
