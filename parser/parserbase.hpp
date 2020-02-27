@@ -62,7 +62,7 @@ struct ParserBase : ParseTools {
 
 	// error checking
 	int doerr(const std::string& msg) {
-		fprintf(stderr, "%s error line %d [%s]\n",
+		fprintf(stderr, "'%s' error, line %d [%s]\n",
 			msg.c_str(),
 			peek().line,
 			peek().val.c_str() );

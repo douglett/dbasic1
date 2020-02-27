@@ -12,7 +12,8 @@ struct Runtime {
 	int run() {
 		try {
 			sframe = { {} }; // one empty global scope
-			int res = func(ast.get("function", "main"));
+			dim_globals();
+			int res = func( ast.get("function", "main") );
 			printf("main returns: %d\n", res);
 			return res;
 		}
@@ -24,30 +25,36 @@ struct Runtime {
 	// useful helper functions
 	StackFrame& global() { return sframe.at(0); }
 	StackFrame& top()    { return sframe.at(std::max(1, int(sframe.size() - 1))); }
-	void showframe(const StackFrame&) { for (auto& d : top()) printf("  %s : %d\n", d.first.c_str(), d.second); }
+	void showframe(const StackFrame& frame) { for (auto& d : frame) printf("  %s : %d\n", d.first.c_str(), d.second); }
 
 	// get var from stack frame
 	int& getvar(const std::string& var) {
-		if (top().count(var)) return top().at(var);
-		// global
+		if (   top().count(var)) return    top().at(var); // local
+		if (global().count(var)) return global().at(var); // global
 		throw std::string("missing identifier: " + var);
 	}
 
 	int func(const ASTnode& fn) {
-		sframe.push_back({}); // push local stack frame
-		locals(fn.get("locals"));
-		showframe(top()); // initial local state
-		int res = block(fn.get("block"));
-		showframe(top()); // end local state
+		sframe.push_back({ }); // push local stack frame
+		dim_locals( fn.get("locals"), top() );
+		showframe( top() ); // initial local state
+		int res = block( fn.get("block") );
+		showframe( top() ); // end local state
 		sframe.pop_back(); // pop local frame
 		return res;
 	}
 
-	int locals(const ASTnode& locals) {
+	int dim_globals() {
+		int res = dim_locals( ast, global() );
+		showframe( global() );
+		return res;
+	}
+
+	int dim_locals(const ASTnode& locals, StackFrame& frame) {
 		for (auto d : locals.find("dim")) {
-			if (top().count(d->value))
+			if (frame.count(d->value))
 				throw std::string("duplicate definition: " + d->value);
-			top()[d->value] = expr(d->get("expr"));
+			frame[d->value] = expr(d->get("expr"));
 		}
 		return 0;
 	}

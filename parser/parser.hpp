@@ -14,11 +14,13 @@ struct Parser : ParserExpression {
 	}
 
 	int prog(ASTnode& prog) {
-		prog = { type: "prog" };
+		prog = { type: "prog", value: tok.fname };
+		int isfunc = 0;
 		while (!eoftok())
 			if      (lineend() > 0) ;
-			// globals here
-			else if (function(prog) > 0) ;
+			else if (isfunc && peeks() == "dim") return doerr("dim after function block");
+			else if (dim(prog) > 0) ; // globals
+			else if (function(prog) > 0) isfunc = 1; // functions - begin function block
 			else    return doerr("root-scope");
 		return 1;
 	}
@@ -41,6 +43,12 @@ struct Parser : ParserExpression {
 			&& lineend();
 		return ok ? 1 : doerr("function");
 	}
+
+//	int globals(ASTnode& globals) {
+//		int res = locals(globals);
+//		if (res == -1) return doerr("globals");
+//		return res;
+//	}
 
 	int locals(ASTnode& locals) {
 		while (true) {

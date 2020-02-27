@@ -10,12 +10,14 @@ struct Token {
 };
 
 struct Tokenizer : ParseTools {
+	std::string fname;
 	std::vector<std::string> lines;
 	std::vector<Token> tokens;
 	Token eof_tok;
 	int line = 0;
 
 	int load(const std::string& fname) {
+		this->fname = fname;
 		std::fstream fs(fname, std::ios::in);
 		if (!fs.is_open())
 			return fprintf(stderr, "could not open file: %s\n", fname.c_str()), 1;

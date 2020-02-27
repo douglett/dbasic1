@@ -1,3 +1,5 @@
+dim acc
+
 function main()
 	dim a = 1
 	dim butt = 4 * 4
@@ -12,5 +14,6 @@ function main()
 end function
 
 function fn()
-	return 100
+	acc++
+	return acc
 end function
