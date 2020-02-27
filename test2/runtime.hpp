@@ -72,6 +72,7 @@ struct Runtime {
 
 	int sysfunc(const ASTnode& callsig) {
 		if (callsig.value == "malloc") { auto argv = getargs(callsig, 1); return mem_alloc(argv[0]); }
+		if (callsig.value == "free"  ) { auto argv = getargs(callsig, 1); return mem_free (argv[0]); }
 		if (callsig.value == "peek"  ) { auto argv = getargs(callsig, 2); return mem_peek (argv[0], argv[1]); }
 		if (callsig.value == "poke"  ) { auto argv = getargs(callsig, 3); return mem_poke (argv[0], argv[1], argv[2]); }
 		return func( ast.get("function", callsig.value) );

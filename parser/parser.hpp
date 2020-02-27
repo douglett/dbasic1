@@ -52,6 +52,7 @@ struct Parser : ParserExpression {
 
 	int locals(ASTnode& locals) {
 		while (true) {
+			if (lineend()) continue;
 			int res = dim(locals);
 			if (res == -1) return doerr("function-locals"); // error in dim
 			if (res ==  0) break; // no more dims

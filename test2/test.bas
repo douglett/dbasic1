@@ -3,6 +3,7 @@ dim acc
 
 function main()
 	dim a = 1
+	'asd
 	dim butt = 4 * 4
 	a += 2
 	a++
