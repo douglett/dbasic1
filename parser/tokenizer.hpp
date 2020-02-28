@@ -2,14 +2,14 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include "parsetools.hpp"
+#include "parsertools.hpp"
 
 struct Token {
 	std::string val;
 	int line;
 };
 
-struct Tokenizer : ParseTools {
+struct Tokenizer : ParserTools {
 	std::string fname;
 	std::vector<std::string> lines;
 	std::vector<Token> tokens;

@@ -3,7 +3,7 @@
 #include <vector>
 #include <iostream>
 
-struct ParseTools {
+struct ParserTools {
 	typedef std::vector<std::string> vecstr;
 
 //	struct Node {

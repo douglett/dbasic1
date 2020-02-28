@@ -1,9 +1,9 @@
 #pragma once
-#include "parsetools.hpp"
+#include "parsertools.hpp"
 #include "astnode.hpp"
 #include "tokenizer.hpp"
 
-struct ParserBase : ParseTools {
+struct ParserBase : ParserTools {
 	Tokenizer tok;
 	int pos = 0;
 
