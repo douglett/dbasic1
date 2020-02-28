@@ -1,5 +1,5 @@
+#unsafe
 dim mem = malloc(20)
-dim acc
 
 function main()
 	dim a = 1
@@ -16,6 +16,8 @@ function main()
 end function
 
 function fn()
-	poke(mem, 0, peek(mem, 0) + 3)
-	return peek(mem, 0)
+	dim acc = peek(mem, 0)
+	acc += 3
+	poke(mem, 0, acc)
+	return acc
 end function
