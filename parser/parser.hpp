@@ -4,10 +4,12 @@
 struct Parser : ParserExpression {
 	ASTnode ast;
 
-	Parser(const Tokenizer& t) { tok = t; }
+	int parsefile(const std::string& fname) {
+		return tok.load(fname) || tok.parse() || parse();
+	}
 
 	int parse() {
-		pos = 0;
+		ast = {}, pos = 0; // reset
 		int result = prog(ast);
 		// printf("parse result: %d\n", result);
 		return result != 1; // returns 1 on error to outside
@@ -58,12 +60,6 @@ struct Parser : ParserExpression {
 		return ok ? 1 : doerr("function");
 	}
 
-//	int globals(ASTnode& globals) {
-//		int res = locals(globals);
-//		if (res == -1) return doerr("globals");
-//		return res;
-//	}
-
 	int locals(ASTnode& locals) {
 		while (true) {
 			if (lineend()) continue;
@@ -76,19 +72,37 @@ struct Parser : ParserExpression {
 
 	int dim(ASTnode& blk) {
 		if (!expect("dim")) return 0;
-		ASTnode& dim = blk.push({"dim", "", {
-			// {"name"},
-			{"expr"}
-		}});
+		auto& dim = blk.push({ "dim" });
 		int ok =
 			identifier()
 			&& (dim.value = peeks(-1), 1) // save variable name
-			&& (
-				(expect("=") && expr( dim.get("expr") )) // assignment expression
-				|| (dim.get("expr").push({ "number", "0" }), 1) // assign default value (0)
-			)
+			&& ( dim_array(dim) == 1 || dim_assign(dim) == 1 || dim_empty(dim) == 1 );
+		return ok ? 1 : doerr("dim-array");
+	}
+
+	int dim_array(ASTnode& dim) {
+		if (!expect("[")) return 0;
+		dim.push({ "type", "array" });
+		dim.push({ "size", "0" });
+		int ok = expect("]") && lineend();
+		return ok ? 1 : doerr("dim-array");
+	}
+
+	int dim_assign(ASTnode& dim) {
+		if (!expect("=")) return 0;
+		dim.push({ "type", "int" });
+		auto& ex = dim.push({ "expr" });
+		int ok =
+			expr(ex) == 1
 			&& lineend();
-		return ok ? 1 : doerr("dim");
+		return ok ? 1 : doerr("dim-assign");
+	}
+
+	int dim_empty(ASTnode& dim) {
+		if (!lineend()) return 0;
+		dim.push({ "type", "int" });
+		dim.push({ "expr", "", { {"number", "0"} } });
+		return 1;
 	}
 
 	int block(ASTnode& blk) {
