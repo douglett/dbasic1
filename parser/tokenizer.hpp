@@ -4,12 +4,10 @@
 #include <fstream>
 #include "parsertools.hpp"
 
-struct Token {
-	std::string val;
-	int line;
-};
 
 struct Tokenizer : ParserTools {
+	struct Token { std::string val; int line; };
+
 	std::string fname;
 	std::vector<std::string> lines;
 	std::vector<Token> tokens;

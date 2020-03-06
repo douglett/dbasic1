@@ -8,7 +8,7 @@ struct ParserBase : ParserTools {
 	int pos = 0;
 
 	// basic look-ahead
-	const Token& peek(int offset=0) {
+	const Tokenizer::Token& peek(int offset=0) {
 		return tok.get(pos + offset);
 	}
 	const std::string& peeks(int offset=0) {
