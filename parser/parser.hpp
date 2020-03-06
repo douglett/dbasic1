@@ -75,17 +75,27 @@ struct Parser : ParserExpression {
 		auto& dim = blk.push({ "dim" });
 		int ok =
 			identifier()
-			&& (dim.value = peeks(-1), 1) // save variable name
-			&& ( dim_array(dim) == 1 || dim_assign(dim) == 1 || dim_empty(dim) == 1 );
-		return ok ? 1 : doerr("dim-array");
+			&& (dim.value = peeks(-1), 1); // save variable name
+			//&& ( dim_array(dim) == 1 || dim_assign(dim) == 1 || dim_empty(dim) == 1 );
+		if (ok == 1) ok = dim_array(dim);
+		if (ok == 0) ok = dim_assign(dim);
+		if (ok == 0) ok = dim_empty(dim);
+		return ok == 1 ? 1 : doerr("dim-array");
 	}
 
 	int dim_array(ASTnode& dim) {
 		if (!expect("[")) return 0;
 		dim.push({ "type", "array" });
 		dim.push({ "size", "0" });
-		int ok = expect("]") && lineend();
-		return ok ? 1 : doerr("dim-array");
+		if (!expect("]")) goto err;
+		if (expect("=")) {
+			if (!strlit()) goto err;
+			dim.push({ "strlit", peeks(-1) });
+		}
+		if (!lineend()) goto err;
+		return 1;
+		err:
+		return doerr("dim-array");
 	}
 
 	int dim_assign(ASTnode& dim) {

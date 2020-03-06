@@ -48,13 +48,26 @@ struct Tokenizer : ParserTools {
 					pushs(s, lno);
 					tokens.push_back({ line.substr(i), lno });
 					break;
+				// string literal
+				} else if (c == '"') {
+					pushs(s, lno);
+					s += c;
+					i++;
+					while (i < line.length()) {
+						s += line[i];
+						i++;
+						if (s.back() == '"') break;
+					}
+					if (s.size() < 2 || s.back() != '"')
+						return fprintf(stderr, "tokenizer: string literal error, line %d\n", lno), 1;
+					pushs(s, lno);
 				// word breaks
 				} else if (iswhitespace(c)) {
 					pushs(s, lno);
 				// control characters
 				} else if (isspecial(c)) {
 					pushs(s, lno);
-					if (isspecial(c)) 
+					if (isspecial(c))
 						tokens.push_back({ std::string()+c, lno });
 				// add to word
 				} else {

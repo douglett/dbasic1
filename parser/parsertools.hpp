@@ -45,6 +45,9 @@ struct ParserTools {
 			if (!isdigit(c)) return 0;
 		return 1;
 	}
+	static int isstrlit(const std::string& str) {
+		return str.length() >= 2 && str.front() == '"' && str.back() == '"';
+	}
 
 	static vecstr split(const std::string& str) {
 		vecstr vs;

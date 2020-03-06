@@ -59,6 +59,11 @@ struct ParserBase : ParserTools {
 			return ++pos, 1;
 		return 0;
 	}
+	int strlit() {
+		if (isstrlit(peeks()))
+			return ++pos, 1;
+		return 0;
+	}
 
 	// error checking
 	int doerr(const std::string& msg) {

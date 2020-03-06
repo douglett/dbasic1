@@ -45,6 +45,7 @@ struct ParserExpression : ParserBase {
 	int expr_compound(ASTnode& ex) {
 		int res = 0;
 		if (res = expr_call(ex), res) return res; // function call
+		if (res = expr_range(ex), res) return res; // array range
 		if (res = expr_brackets(ex), res) return res; // brackets
 		return expr_atom(ex);
 	}
@@ -54,6 +55,16 @@ struct ParserExpression : ParserBase {
 		else if (number()) ex = { "number", peeks(-1) }; // number
 		else    return 0;
 		return 1;
+	}
+
+	int expr_range(ASTnode& ex) {
+		const int p = pos;
+		if (!identifier() || !expect("[")) return pos = p, 0;
+		ex = {"range", peeks(-2), { {"expr"} }}; // function call
+		int ok =
+			expr( ex.get("expr") ) == 1
+			&& expect("]");
+		return ok ? 1 : doerr("expr-range");
 	}
 
 	int expr_call(ASTnode& ex) {
